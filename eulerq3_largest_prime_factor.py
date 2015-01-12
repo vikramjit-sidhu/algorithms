@@ -7,9 +7,14 @@ Finding all prime factors in a range (till sq rt n) then dividing them with n (I
 
 Using Pollard Rho method to find factorization of number
 http://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
+
+Miller Rabin Primality test used
+http://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
 """
 
-# from math import sqrt
+from math import log, ceil, sqrt
+from random import randint
+
 
 def main():
     # dividing_list_primes()
@@ -26,13 +31,14 @@ def pollard_rho():
         x = g(x, n)
         y = g(g(y, n), n)
         d = gcd(abs(x-y), n)
-        print("{}   {}  {}".format(x, y, d))
 
     if d == n:
         return 1
 
     factor1 = d
-    factor2 = n/d
+    factor2 = int(n/d)
+
+    print("Factors are {} and {}".format(factor1, factor2))
 
     if factor2 > factor1 and primality_test(factor2):
         print("largest prime factor of {} is {}".format(n, factor2))
@@ -42,8 +48,41 @@ def pollard_rho():
     return factor1
 
 
-def primality_test(num):
-    
+
+def primality_test(n):
+    """
+    n-1 = 2^s * d
+    """
+    s = ceil(log(n, 2))
+    num = n-1
+    while (num % (2**s)) != 0:
+        s-=1
+    d = n / (2**s)
+
+    composite = False
+
+    for k in range(3):
+        a = randint(2, n-2)
+
+        x = (a**d) % n
+        if x == 1:
+            continue
+        for i in range(1, s-1):
+            x = x*x
+            if (x % n) == 1:
+                composite = True
+                break
+            elif (x % n) == num:
+                continue
+
+        if composite:
+            break
+
+    return composite
+
+
+
+
 
 
 def gcd(a, b):
@@ -56,7 +95,7 @@ def g(x, n):
     return (x*x + 1) % n
 
 
-
+#METHOD 2
 
 def dividing_list_primes():
     n = int(input("enter the number to find largest prime factor of: "))
