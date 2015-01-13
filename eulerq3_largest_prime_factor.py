@@ -17,14 +17,25 @@ from random import randint
 
 
 def main():
+#method1:
     # dividing_list_primes()
-    pollard_rho()
 
-
-
-def pollard_rho():
+    #method2:
     n = int(input("enter the number to find largest prime factor of: "))
 
+    factor1, factor2 = pollard_rho(n)
+    
+    print("factor1: {} and factor2: {}".format(factor1, factor2))
+
+    if factor2 > factor1 and primality_test(factor2):
+        print("\nlargest prime factor of {} is {}".format(n, factor2))
+        return
+    
+    print("\nlargest prime factor of {} is {}".format(n, factor1))
+    #factor1, factor2 = pollard_rho(n)
+
+
+def pollard_rho(n):
     x = 2; y = 2; d = 1
 
     while d == 1:
@@ -33,55 +44,47 @@ def pollard_rho():
         d = gcd(abs(x-y), n)
 
     if d == n:
-        return 1
+        return (1, n)
 
     factor1 = d
     factor2 = int(n/d)
-
-    print("Factors are {} and {}".format(factor1, factor2))
-
-    if factor2 > factor1 and primality_test(factor2):
-        print("largest prime factor of {} is {}".format(n, factor2))
-        return factor2
-
-    print("largest prime factor of {} is {}".format(n, factor1))
-    return factor1
+    return (factor1, factor2)
 
 
 
 def primality_test(n):
     """
+    miller rabin primality test used
     n-1 = 2^s * d
     """
+    print("finding primality test of {}".format(n))
+    n = int(n)
+    
     s = ceil(log(n, 2))
     num = n-1
-    while (num % (2**s)) != 0:
+    while (num % pow(2, s)) != 0:
         s-=1
-    d = n / (2**s)
+    d = int(num/pow(2, s))
 
-    composite = False
-
-    for k in range(3):
-        a = randint(2, n-2)
-
-        x = (a**d) % n
+    prime = True
+    strong_pseudoprimes = [2, 3, 31, 73, 5, 7, 61, 11, 13, 17, 19, 23, 1662803]
+    
+    for a in strong_pseudoprimes:
+        x = pow(a, d, n)
         if x == 1:
             continue
         for i in range(1, s-1):
             x = x*x
             if (x % n) == 1:
-                composite = True
+                prime = False
                 break
             elif (x % n) == num:
                 continue
 
-        if composite:
+        if not prime:
             break
 
-    return composite
-
-
-
+    return prime
 
 
 
