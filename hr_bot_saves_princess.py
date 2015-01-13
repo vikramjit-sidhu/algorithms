@@ -10,7 +10,6 @@ def displayPathtoPrincess(n,grid):
 
     
 def calculate_moves(prinx, priny, botx, boty):
-    print("princess:({}, {})  Bot:({},{})".format(prinx, priny, botx, boty))
     if priny < boty:
         print("UP")
         calculate_moves(prinx, priny, botx, boty-1)
@@ -46,3 +45,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
