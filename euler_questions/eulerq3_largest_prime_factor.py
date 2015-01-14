@@ -21,31 +21,28 @@ def main():
     # dividing_list_primes()
 
     #method2:
-    n = int(input("enter the number to find largest prime factor of: "))
-
-    # factor1, factor2 = pollard_rho(n)
+    n = int(input("number to find largest prime factor of: "))
+#IMPROVEMENT: keep a list of all prime factors, instead of discarding them?
+#eg push factor1 or factor2 (depending which is prime) in list prime_factors, then extract max(prime_factors)
+    while(n > 1):
+        factor1, factor2 = pollard_rho(n)
+        if factor1 > factor2:
+            if not primality_test(factor1):
+                n = factor1
+                continue
+            else:
+                lprifactor = factor1
+                break
+        elif factor2 > factor1:
+            if not primality_test(factor2):
+                n = factor2
+                continue
+            else:
+                lprimefactor = factor2
+                break
+    print("largest prime factor: {}".format(lprimefactor))
+        
     
-    # print("factor1: {} and factor2: {}".format(factor1, factor2))
-
-    # if factor2 > factor1 and primality_test(factor2):
-        # print("\nlargest prime factor of {} is {}".format(n, factor2))
-        # return
-    
-    # print("\nlargest prime factor of {} is {}".format(n, factor1))
-    
-    lprime = 1
-    factor1, factor2 = pollard_rho(n)
-    while factor1 != 1 or factor2 != 1:
-        if factor2 > factor1:
-            factor1n, factor2n = pollard_rho(factor2)
-        else:
-            factor1n, factor2n = pollard_rho(factor1)
-            
-    if factor1 == 1:
-        print("\nlargest prime factor of {} is {}".format(n, factor2))
-    else:
-        print("\nlargest prime factor of {} is {}".format(n, factor1))
-       
 
 
 def pollard_rho(n):
@@ -70,7 +67,6 @@ def primality_test(n):
     miller rabin primality test used
     n-1 = 2^s * d
     """
-    print("testing primality of {}".format(n))
     n = int(n)
 
 #finding s and d    
@@ -104,7 +100,6 @@ def primality_test(n):
         elif not found:
             prime = False
             break
-
     return prime
 
 
@@ -141,7 +136,6 @@ def generate_list_primes(n):
 
     for p in numbers:
         prime_nos.append(p)
-        print("prime {} appended to list".format(p))
         num = p*p; inc = 2*p
         while num < limit:
             if num in numbers:
