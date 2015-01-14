@@ -2,7 +2,7 @@
 Euler q'n 3, finding largest prime factor of a number, n (600851475143)
 https://projecteuler.net/problem=3
 
-Using The sieve of Eratosthenes http://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
+Using The Sieve of Eratosthenes http://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
 Finding all prime factors in a range (till sq rt n) then dividing them with n (INEFFICIENT METHOD)
 
 Using Pollard Rho method to find factorization of number
@@ -13,15 +13,17 @@ http://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
 """
 
 from math import log, ceil, sqrt
-from random import randint
 
 
 def main():
-#method1:
-    # dividing_list_primes()
-
-    #method2:
     n = int(input("number to find largest prime factor of: "))
+
+#METHOD1:
+    if dividing_list_primes(n):
+        return
+
+    
+#METHOD2:
 #IMPROVEMENT: keep a list of all prime factors, instead of discarding them?
 #eg push factor1 or factor2 (depending which is prime) in list prime_factors, then extract max(prime_factors)
     while(n > 1):
@@ -43,6 +45,12 @@ def main():
     print("largest prime factor: {}".format(lprimefactor))
         
     
+
+#********************************************************************
+#********************************************************************
+#METHOD 1
+#********************************************************************
+#********************************************************************
 
 
 def pollard_rho(n):
@@ -113,40 +121,51 @@ def gcd(a, b):
 def g(x, n):
     return (x*x + 1) % n
 
-
+    
+#********************************************************************
+#********************************************************************
 #METHOD 2
+#********************************************************************
+#********************************************************************
 
-def dividing_list_primes():
-    n = int(input("enter the number to find largest prime factor of: "))
+
+def dividing_list_primes(n):
     prime_nos = generate_list_primes(n)
-
-    for num in reversed(prime_nos):
+    prime_nos.sort(reverse=True)
+    
+    for num in prime_nos:
         if n%num == 0:
-            print("largest prime factor of {} is {}".format(n, num))
-            return
+            print("largest prime factor is {}".format(num))
+            return True
+    return False
 
 
 
 def generate_list_primes(n):
+    """
+    Sieve of Eratosthenes, used for generation
+    """
     prime_nos = []
-    limit = int(sqrt(n))
-
-    numbers = list(range(3, limit+1, 2))
     prime_nos.append(2)
 
-    for p in numbers:
+    limit = int(sqrt(n))+1
+    numbers = {lival: False for lival in list(range(3, limit, 2))}
+    for p in numbers.keys():
+        if numbers[p]:
+            continue
         prime_nos.append(p)
+        
         num = p*p; inc = 2*p
         while num < limit:
             if num in numbers:
-                numbers.remove(num)
+                numbers[num] = True
             num += inc
 
-    print ("final prime_nos list generated {}".format(prime_nos))
     return prime_nos
 
 
-
+#********************************************************************
+#********************************************************************
 
 if __name__ == '__main__':
     main()
