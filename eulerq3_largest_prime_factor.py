@@ -40,14 +40,12 @@ def main():
             factor1n, factor2n = pollard_rho(factor2)
         else:
             factor1n, factor2n = pollard_rho(factor1)
-        if (factor1n, factor2n) == 
             
     if factor1 == 1:
         print("\nlargest prime factor of {} is {}".format(n, factor2))
     else:
         print("\nlargest prime factor of {} is {}".format(n, factor1))
        
-        
 
 
 def pollard_rho(n):
@@ -72,31 +70,39 @@ def primality_test(n):
     miller rabin primality test used
     n-1 = 2^s * d
     """
-    print("finding primality test of {}".format(n))
+    print("testing primality of {}".format(n))
     n = int(n)
-    
-    s = ceil(log(n, 2))
-    num = n-1
-    while (num % pow(2, s)) != 0:
-        s-=1
-    d = int(num/pow(2, s))
 
-    prime = True
+#finding s and d    
+    num = n-1
+    s = ceil(log(n, 2))
+    power = pow(2, s)
+    while (num % power) != 0:
+        s -= 1
+        power = int(power/2)
+    d = int(num/power)  #computing d, after obtaining 2^s
+
     strong_pseudoprimes = [2, 3, 31, 73, 5, 7, 61, 11, 13, 17, 19, 23, 1662803]
-    
+    prime = True
     for a in strong_pseudoprimes:
         x = pow(a, d, n)
-        if x == 1:
+        if x == 1 or x == num:
             continue
-        for i in range(1, s-1):
-            x = x*x
-            if (x % n) == 1:
+            
+        found = False
+        for i in range(1, s):
+            x = pow(x, 2, n)
+            if x == num:
+                found = True
+                break
+            elif x == 1:
                 prime = False
                 break
-            elif (x % n) == num:
-                continue
 
         if not prime:
+            break
+        elif not found:
+            prime = False
             break
 
     return prime
