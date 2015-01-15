@@ -45,6 +45,8 @@ def algorithm1(problem, trace = None):
     result = algorithm1(sub, trace)
     return problem.getLocationInSelf(sub, result)
 
+    
+    
 def algorithm2(problem, location = (0, 0), trace = None):
     # if it's empty, we're done 
     if problem.numRow <= 0 or problem.numCol <= 0:
@@ -60,6 +62,8 @@ def algorithm2(problem, location = (0, 0), trace = None):
         # there is a better neighbor, so move to the neighbor and recurse
         return algorithm2(problem, nextLocation, trace)
 
+        
+        
 def algorithm3(problem, bestSeen = None, trace = None):
     # if it's empty, we're done 
     if problem.numRow <= 0 or problem.numCol <= 0:
@@ -109,6 +113,8 @@ def algorithm3(problem, bestSeen = None, trace = None):
     result = algorithm3(sub, newBest, trace)
     return problem.getLocationInSelf(sub, result)
 
+    
+    
 def algorithm4(problem, bestSeen = None, rowSplit = True, trace = None):
     # if it's empty, we're done 
     if problem.numRow <= 0 or problem.numCol <= 0:
