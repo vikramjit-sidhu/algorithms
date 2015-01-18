@@ -2,11 +2,10 @@
 Priority queue implementation, using max Heap as backbone
 IMPROVEMENTS: make instance variables left, right, key, value private?
 """
-import sys
-import fileinput
+from random import randint
 
 class MaxHeap:
-    def __init__(self, value, key):
+    def __init__(self, key, value):
         self.value = value
         self.key = key
         self.left = None
@@ -22,7 +21,9 @@ class MaxHeap:
         """
         maxelt = root.key
         #handling base case here
-        if not root.right:
+        if not root.left and not root.right:
+            new_root = None     #no more elements left in heap
+        elif not root.right:
             root.left.parent = root.parent
             new_root = root.left
         elif not root.left:
@@ -40,7 +41,7 @@ class MaxHeap:
         be reshuffled to find a new root
         """
         if not node.left:
-            #nothing to do here
+            return node
         elif not node.right:
             node.right = node.left
             node.left = None
@@ -71,7 +72,12 @@ class MaxHeap:
         the first element lesser than new_node.key is where it is inserted
         the node which has lesser difference than new_node.key is iterated
         EDGE CASE: incase new_node will replace root
+
+        Assuming that the root is created beforehand and is not None
         """
+        if not root:
+            print("Succesfully broken the universe")
+
         if new_node.key > root.key:
             new_node.right = root
             root.parent = new_node
@@ -86,8 +92,8 @@ class MaxHeap:
             return new_node
         else:
             self.__insert_into_tree(root, new_node)
-            return root
-        return self #should not be reached
+
+        return root
 
 
 
@@ -208,8 +214,17 @@ def main():
         
 def generate_heap():
     #read list to generate heap from external file
-    a = input()
-    print(a)
+    node_value = 1
+    root = MaxHeap(randint(0, 130), node_value)
+
+    for i in range(0, 130, 7):
+        node_value += 1
+        new_node = MaxHeap(i, node_value)
+        root = root.insert_with_priority(root, new_node)
+
+    while root:
+        max_elt, root = root.extract_max_priority(root)
+        print(max_elt)
         
     
         
