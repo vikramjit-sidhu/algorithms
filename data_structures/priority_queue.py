@@ -16,8 +16,8 @@ class MaxHeap:
 
     def extract_max_priority(self, root):
         """
-        returns the max element in heap which as it is a max heap is root
-        return value is in format (max element, new root), as since root is 
+        returns the max priority element in heap which as it is a max heap is root
+        return value is in format (max element, new root), since root is 
         extracted, there will be a new root
         """
         maxelt = root.key
@@ -65,12 +65,33 @@ class MaxHeap:
         return node
     
     
-    def insert_with_priority(self, node, new_node):
+    def insert_with_priority(self, root, new_node):
         """
         insert an element, search recursively until a position is found
         the first element lesser than new_node.key is where it is inserted
         the node which has lesser difference than new_node.key is iterated
+        EDGE CASE: incase new_node will replace root
         """
+        if new_node.key > root.key:
+            new_node.right = root
+            root.parent = new_node
+            if root.right.key > root.left.key:
+                new_node.left = root.right
+                root.right = None
+            else:
+                new_node.left = root.left
+                root.left = None
+            new_node.left.parent = new_node
+
+            return new_node
+        else:
+            self.__insert_into_tree(root, new_node)
+            return root
+        return self #should not be reached
+
+
+
+    def __insert_into_tree(self, node, new_node):
         if not node.left:
             node.left = new_node
             new_node.parent = node
@@ -99,37 +120,63 @@ class MaxHeap:
         rightdiff = node.right.key - new_node.key
 
         if leftdiff > rightdiff:
-            self.insert_with_priority(node.right, new_node)
+            self.__insert_into_tree(node.right, new_node)
         else:
-            self.insert_with_priority(node.left, new_node)
+            self.__insert_into_tree(node.left, new_node)
             
         
-    def increment_priority(self, node, key_find, value_find, increment):    #argument node shoulde be = root
+    def increment_priority(self, root, key_find, increment):
         """
-        used to increment priority of a node key
+        used to increment priority of a node key, calling method __finding_node
         after incrementing calls private method reshuffle_heap
         """
-        while node.key != key_find:
-            if node.left.key < key_find:
-                node = node.right
-                continue
-            elif node.right.key < key.find:
-                node = node.left
-                continue
+        node = self.__finding_node(root, key_find, increment)
+        new_root = self.__reshuffle_heap(node)
+        if new_root:
+            return new_root
+
+        return root
+
+
+    def __finding_node(self, node, key_find, increment):
+        """
+        find node whose priority has to be incremented
+        """
+        #base cases
+        if not node:
+            return None
+        elif node.key == key_find:
+            node.key += increment
+            return node
+        elif not node.left and not node.right:
+            return None
+
+        if node.left and node.left.key < key_find:
+            return self.__finding_node(node.right, key_find, increment)
+        elif node.right and node.right.key < key_find:
+            return self.__finding_node(node.left, key_find, increment)
+        else:
+            if not node.left:
+                return self.__finding_node(node.right, key_find, increment)
+            elif not node.right:
+                return self.__finding_node(node.left, key_find, increment)
 
             ldiff = node.left.key - key_find
             rdiff = node.right.key - key_find
             if ldiff < rdiff:
-                node = node.right
-                continue
-            node = node.left    #as rdiff < ldiff
-
-        node.key += increment
-        self.__reshuffle_heap(node)
+                rval = self.__finding_node(node.left, key_find, increment)
+                if not rval:
+                    rval = self.__finding_node(node.right, key_find, increment)
+                return rval
+            else:
+                rval = self.__finding_node(node.right, key_find, increment)
+                if not rval:
+                    rval = self.__finding_node(node.left, key_find, increment)
+                return rval
     
     
     def __reshuffle_heap(self, node):
-        while node.parent.key < node.key:
+        while node.parent and node.parent.key < node.key:
             ancestor = node.parent
             if node == ancestor.left:
                 ancestor.left = node.left
@@ -145,6 +192,12 @@ class MaxHeap:
                 node.right = ancestor
             node.parent = ancestor.parent
             ancestor.parent = node
+
+        #base case when node becomes the root (hence check in while loop for node.parent)
+        if not node.parent:
+            return node
+        else:
+            return None
     
         
 
@@ -154,13 +207,10 @@ def main():
         
         
 def generate_heap():
-    #read list to generate heap from external file, or user input
+    #read list to generate heap from external file
     a = input()
-    print(sys.argv[1:])
-    print("input is {}".format(a))
-    #for line in fileinput.input():
-        #print(line)
-    
+    print(a)
+        
     
         
         
