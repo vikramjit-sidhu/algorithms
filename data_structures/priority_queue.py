@@ -137,9 +137,12 @@ class MaxHeap:
         after incrementing calls private method reshuffle_heap
         """
         node = self.__finding_node(root, key_find, increment)
-        new_root = self.__reshuffle_heap(node)
-        if new_root:
-            return new_root
+        if not node:
+            print("Key {} not found, not incremented in heap".format(key_find))
+        else:
+            new_root = self.__reshuffle_heap(node)
+            if new_root:
+                return new_root
 
         return root
 
@@ -148,37 +151,27 @@ class MaxHeap:
         """
         find node whose priority has to be incremented
         """
-        #base cases
-        if not node:
-            return None
-        elif node.key == key_find:
+        if node.key == key_find:
             node.key += increment
             return node
-        elif not node.left and not node.right:
-            return None
-
-        if node.left and node.left.key < key_find:
-            return self.__finding_node(node.right, key_find, increment)
-        elif node.right and node.right.key < key_find:
-            return self.__finding_node(node.left, key_find, increment)
-        else:
-            if not node.left:
-                return self.__finding_node(node.right, key_find, increment)
-            elif not node.right:
-                return self.__finding_node(node.left, key_find, increment)
-
+        elif node.left and node.right and node.left.key > key_find and node.right.key > key_find:
             ldiff = node.left.key - key_find
             rdiff = node.right.key - key_find
             if ldiff < rdiff:
                 rval = self.__finding_node(node.left, key_find, increment)
                 if not rval:
                     rval = self.__finding_node(node.right, key_find, increment)
-                return rval
             else:
                 rval = self.__finding_node(node.right, key_find, increment)
                 if not rval:
                     rval = self.__finding_node(node.left, key_find, increment)
-                return rval
+            return rval
+        elif node.left and node.left.key > key_find:
+            return self.__finding_node(node.left, key_find, increment)
+        elif node.right and node.right.key > key_find:
+            return self.__finding_node(node.right, key_find, increment)
+            
+        return None
     
     
     def __reshuffle_heap(self, node):
@@ -221,6 +214,9 @@ def generate_heap():
         node_value += 1
         new_node = MaxHeap(i, node_value)
         root = root.insert_with_priority(root, new_node)
+        
+    for i in range(0, 130, 7):
+        root = root.increment_priority(root, i, randint(0, 130))
 
     while root:
         max_elt, root = root.extract_max_priority(root)
