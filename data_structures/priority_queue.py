@@ -47,7 +47,6 @@ class MaxHeap:
             node.left = None
         else:
             #always choose the node which has greater key, as only it can be successor
-            #ADD A CHECK TO SEE IF NODE.PARENT = NONE, ONLY THEN CHANGE PARENT OF SUCCESSOR
             if node.right.key > node.left.key:
                 successor = self.__balance_heap(node.right)
                 successor.left = node.left
@@ -76,7 +75,7 @@ class MaxHeap:
         Assuming that the root is created beforehand and is not None
         """
         if not root:
-            print("Succesfully broken the universe")
+            print("UNSuccesfull in breaking the universe")
 
         if new_node.key > root.key:
             new_node.right = root
@@ -138,7 +137,7 @@ class MaxHeap:
         """
         node = self.__finding_node(root, key_find, increment)
         if not node:
-            print("Key {} not found, not incremented in heap".format(key_find))
+            print("Key {} not found, hence not incremented in heap".format(key_find))
         else:
             new_root = self.__reshuffle_heap(node)
             if new_root:
@@ -150,6 +149,7 @@ class MaxHeap:
     def __finding_node(self, node, key_find, increment):
         """
         find node whose priority has to be incremented
+        recursive method used
         """
         if node.key == key_find:
             node.key += increment
@@ -166,15 +166,19 @@ class MaxHeap:
                 if not rval:
                     rval = self.__finding_node(node.left, key_find, increment)
             return rval
-        elif node.left and node.left.key > key_find:
+        elif node.left and node.left.key >= key_find:
             return self.__finding_node(node.left, key_find, increment)
-        elif node.right and node.right.key > key_find:
+        elif node.right and node.right.key >= key_find:
             return self.__finding_node(node.right, key_find, increment)
             
         return None
     
     
     def __reshuffle_heap(self, node):
+        """
+        given node, whose key has been incremented, this method moves it up
+        the heap, if needed. handles the case where node becomes the root
+        """
         while node.parent and node.parent.key < node.key:
             ancestor = node.parent
             if node == ancestor.left:
@@ -182,21 +186,24 @@ class MaxHeap:
                 temp = ancestor.right
                 ancestor.right = node.right
                 node.right = temp
+                node.right.parent = node
                 node.left = ancestor
             else:
                 ancestor.right = node.right
                 temp = ancestor.left
                 ancestor.left = node.left
                 node.left = temp
+                node.left.parent = node
                 node.right = ancestor
             node.parent = ancestor.parent
             ancestor.parent = node
-
+            ancestor.left.parent = ancestor
+            ancestor.right.parent = ancestor
+            
         #base case when node becomes the root (hence check in while loop for node.parent)
         if not node.parent:
             return node
-        else:
-            return None
+        return None
     
         
 
@@ -215,8 +222,11 @@ def generate_heap():
         new_node = MaxHeap(i, node_value)
         root = root.insert_with_priority(root, new_node)
         
-    for i in range(0, 130, 7):
-        root = root.increment_priority(root, i, randint(0, 130))
+    print("INCREMENTING PRIORITY")    
+    # for i in range(0, 130, 7):
+        # print("calling method root.key -> {}, key_find -> {}".format(root.key, i))
+        # root = root.increment_priority(root, i, randint(0, 130))
+    root = root.increment_priority(root, 0, randint(0, 130))
 
     while root:
         max_elt, root = root.extract_max_priority(root)
