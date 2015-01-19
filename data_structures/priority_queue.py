@@ -56,6 +56,7 @@ class MaxHeap:
                 successor.left = node.right
                 node.right.parent = successor
 
+            #NECESSARY? base case already handled in extract_max_priority
             if not node.parent: #base case when node == root
                 successor.parent = None
                 return successor
@@ -185,20 +186,24 @@ class MaxHeap:
                 ancestor.left = node.left
                 temp = ancestor.right
                 ancestor.right = node.right
-                node.right = temp
-                node.right.parent = node
                 node.left = ancestor
+                node.right = temp
+                if node.right:
+                    node.right.parent = node
             else:
                 ancestor.right = node.right
                 temp = ancestor.left
                 ancestor.left = node.left
-                node.left = temp
-                node.left.parent = node
                 node.right = ancestor
+                node.left = temp
+                if node.left:
+                    node.left.parent = node
             node.parent = ancestor.parent
             ancestor.parent = node
-            ancestor.left.parent = ancestor
-            ancestor.right.parent = ancestor
+            if ancestor.left:
+                ancestor.left.parent = ancestor
+            if ancestor.right:
+                ancestor.right.parent = ancestor
             
         #base case when node becomes the root (hence check in while loop for node.parent)
         if not node.parent:
