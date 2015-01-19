@@ -49,13 +49,13 @@ class MaxHeap:
             #always choose the node which has greater key, as only it can be successor
             if node.right.key > node.left.key:
                 successor = self.__balance_heap(node.right)
-                successor.left = node.left
-                node.left.parent = successor
+                successor.left = node.left      #successor.left is the one which is always empty
             else:
                 successor = self.__balance_heap(node.left)
                 successor.left = node.right
-                node.right.parent = successor
-
+                    
+            if successor.left:
+                successor.left.parent = successor
             #NECESSARY? base case already handled in extract_max_priority
             if not node.parent: #base case when node == root
                 successor.parent = None
