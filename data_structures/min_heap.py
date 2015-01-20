@@ -2,6 +2,7 @@
 Priority queue implementation, using max Heap as backbone
 IMPROVEMENTS: make instance variables left, right, key, value private?
 """
+import sys
 from random import randint
 
 class MaxHeap:
@@ -67,6 +68,7 @@ class MaxHeap:
         return node
     
     
+#dangerous method    
     def insert_with_priority(self, root, new_node):
         """
         insert an element, search recursively until a position is found
@@ -97,7 +99,6 @@ class MaxHeap:
         return root
 
 
-
     def __insert_into_tree(self, node, new_node):
         if not node.left:
             node.left = new_node
@@ -110,27 +111,69 @@ class MaxHeap:
             
         if new_node.key > node.left.key:
             #insert new_node here
-            new_node.left = node.left
+            new_node.right = node.left
+            new_node.right.parent = new_node
             new_node.parent = node
-            node.left.parent = new_node
             node.left = new_node
             return
         elif new_node.key > node.right.key:
             #insert new_node here
             new_node.right = node.right
+            new_node.right.parent = new_node
             new_node.parent = node
-            node.right.parent = new_node
             node.right = new_node
             return
             
         leftdiff = node.left.key - new_node.key
         rightdiff = node.right.key - new_node.key
-
         if leftdiff > rightdiff:
             self.__insert_into_tree(node.right, new_node)
         else:
             self.__insert_into_tree(node.left, new_node)
+     
+
+#DANGEROUS METHOD     
+    def __insert_in_placeof(self, new_node, replacing_node):
+        """
+        new_node only has its key and value set, its right, left and parent are None
+        replacing_node becomes a child of new_node and has one of its children move up and become a
+        child of new_node
+        """
+        if not new_node or not replacing_node:
+            print("ERROR: method __insert_in_placeof null values sent")
+            return
+        new_node.parent = replacing_node.parent #new_node parent set
+        new_node.right = replacing_node #new_node right set
+        replacing_node.parent = new_node    #replacing_node parent set; new_node right child parent set
+        
+        #setting new_node.left
+        if replacing_node.right:
+            if replacing_node.left:
+                if replacing_node.left.key > replacing_node.right.key:
+                    new_node.left = replacing_node.left
+                    replacing_node.left = None
+                else:
+                    new_node.left = replacing_node.right
+                    replacing_node.right = None
+            else:
+                new_node.left = replacing_node.right
+                replacing_node.right = None
+        else:
+            new_node.left = replacing_node.left
+            replacing_node.left = None
             
+        if new_node.left:
+            new_node.left.parent = new_node #new_node left child parent set
+            
+        return new_node
+        
+        
+     
+#DANGEROUS METHOD     
+    def __switch_positions(self, ancestor, child):
+        """
+        
+        """
         
     def increment_priority(self, root, key_find, increment):
         """
@@ -214,6 +257,7 @@ class MaxHeap:
         
 
 def main():
+    sys.stdout = open("output.txt", "w")
     heap = generate_heap()
         
         
@@ -235,7 +279,7 @@ def generate_heap():
 
     while root:
         max_elt, root = root.extract_max_priority(root)
-        print(max_elt)
+        print("\n{}".format(max_elt))
         
     
         
