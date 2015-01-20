@@ -47,20 +47,21 @@ class MaxHeap:
             node.left = None
         else:
             #always choose the node which has greater key, as only it can be successor
-            if node.right.key > node.left.key:
+            if node.right.key >= node.left.key:
                 successor = self.__balance_heap(node.right)
                 successor.left = node.left      #successor.left is the one which is always empty
             else:
                 successor = self.__balance_heap(node.left)
                 successor.left = node.right
-                    
+            print("recursion, node.key -> {};  node.right.key -> {};  node.left.key -> {}".format(node.key, node.right.key, node.left.key))
+            print("successor found -> {}".format(successor.key))        
             if successor.left:
                 successor.left.parent = successor
-            #NECESSARY? base case already handled in extract_max_priority
+
             if not node.parent: #base case when node == root
                 successor.parent = None
                 return successor
-            node.right = sucessor
+            node.right = successor
             node.left = None
                  
         return node
@@ -227,7 +228,6 @@ def generate_heap():
         new_node = MaxHeap(i, node_value)
         root = root.insert_with_priority(root, new_node)
         
-    print("INCREMENTING PRIORITY")    
     # for i in range(0, 130, 7):
         # print("calling method root.key -> {}, key_find -> {}".format(root.key, i))
         # root = root.increment_priority(root, i, randint(0, 130))
