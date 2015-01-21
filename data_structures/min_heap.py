@@ -15,7 +15,6 @@ class MaxHeap:
         self.parent = None
 
 
-#slightly dangerous method        
     def extract_max_priority(self, root):
         """
         returns the max priority element in heap which as it is a max heap is root
@@ -27,11 +26,9 @@ class MaxHeap:
         if not root.left and not root.right:
             new_root = None     #no more elements left in heap
         elif not root.right:
-            root.left.parent = root.parent
-            new_root = root.left
+            new_root = self.__move_up_tree(root, root.left)
         elif not root.left:
-            root.right.parent = root.parent
-            new_root = root.right
+            new_root = self.__move_up_tree(root, root.right)
         else:
             new_root = self.__balance_heap(root)
 
@@ -40,36 +37,60 @@ class MaxHeap:
         
     def __balance_heap(self, node):
         """
-        after the method extract_max_priority is called, the heap needs to
-        be reshuffled to find a new root
-        successor is always a child of node
+        finds a successor for node(among its children), going down heap till one is found
+        successor is defined as having one of its children empty (None)
         """
-        if not node.left:
-            return node
-        elif not node.right:
-            node.right = node.left
-            node.left = None
-        else:
+        if node.right and node.left:
             #always choose the node which has greater key, as only it can be successor
             if node.right.key >= node.left.key:
                 successor = self.__balance_heap(node.right)
-                successor.left = node.left      #successor.left is the one which is always empty
             else:
                 successor = self.__balance_heap(node.left)
-                successor.left = node.right
-            print("recursion, node.key -> {};  node.right.key -> {};  node.left.key -> {}".format(node.key, node.right.key, node.left.key))
-            print("successor found -> {}".format(successor.key))        
-            if successor.left:
-                successor.left.parent = successor
+            node = self.__move_up_tree(node, successor)
 
-            if not node.parent: #base case when node == root
-                successor.parent = None
-                return successor
-            node.right = successor
-            node.left = None
-                 
         return node
     
+    
+#DANGEROUS METHOD    
+    def __move_up_tree(self, father, successor):
+        """
+        moves successor(child of node) up in place of node, and 
+        hence frees up one of nodes children, for it to be moved further up
+        successor always has one child empty
+        returns node, ie the one which is to be moved up tree further
+        
+        should handle base case where node == root
+        """
+        if not father or not successor or not (successor.left and successor.right):
+            print("\n\nERROR: method __move_up_tree, null value encountered where there should not be one\n")
+            return None
+        #need to change left, right of successor; parents of left and right
+        #need to free up one of children of father
+        #keep the order of the parent, with respect to position of child   
+        if successor == father.left:
+            temp = father.right
+            father.right = None
+        elif successor == father.right:
+            temp = father.left
+            father.left = None
+        else:   #NOTE: due to this check, need not change successor.parent, as it is already set to father
+            print("\n\nERROR: method __move_up_tree, successor is not a child of father\n")
+            return None
+
+        #updating parent of temp node    
+        temp.parent = successor
+        #finding out which of child nodes, successor has free
+        if not successor.left:
+            successor.left = temp
+        else:
+            successor.right = temp
+        
+        if not father.parent: #base case where node == root, return successor
+            father = None
+            successor.parent = None
+            return successor
+        return father
+        
     
 #dangerous method    
     def insert_with_priority(self, root, new_node):
@@ -78,11 +99,10 @@ class MaxHeap:
         the first element lesser than new_node.key is where it is inserted
         the node which has lesser difference than new_node.key is iterated
         EDGE CASE: incase new_node will replace root
-
-        Assuming that the root is created beforehand and is not None
         """
         if not root:
             print("UNSuccesfull in breaking the universe")
+            return None
 
         if new_node.key > root.key:
             new_node.right = root
@@ -146,7 +166,7 @@ class MaxHeap:
         returns new_node, ie the node which has been newly inserted
         """
         if not new_node or not replacing_node:
-            print("ERROR: method, __insert_in_placeof null values sent")
+            print("\n\nERROR: method, __insert_in_placeof null values sent\n")
             return None
         new_node.parent = replacing_node.parent #new_node parent set
         new_node.right = replacing_node #new_node right set
@@ -263,7 +283,7 @@ class MaxHeap:
         named parent as father else too confusing
         """
         if not father or not childe:
-            print("ERROR: method, __switch_positions null attributes sent")
+            print("\n\nERROR: method, __switch_positions null attributes sent\n")
             return None
         childe.parent = father.parent   #childe.parent updated
         father.parent = childe  #father.parent updated
