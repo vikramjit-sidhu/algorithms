@@ -67,6 +67,7 @@ class MaxHeap:
         #need to change left, right of successor; parents of left and right
         #need to free up one of children of father
         #keep the order of the parent, with respect to position of child   
+        
         if successor == father.left:
             temp = father.right
             father.right = None
@@ -77,9 +78,9 @@ class MaxHeap:
             print("\n\nERROR: method __move_up_tree, successor is not a child of father\n")
             return None
 
-        #updating parent of temp node    
-        temp.parent = successor
-        #finding out which of child nodes, successor has free
+        temp.parent = successor #updating parent of temp node
+        
+        #finding out which of child nodes, successor has free, assigning it to other child of father
         if not successor.left:
             successor.left = temp
         else:
