@@ -2,8 +2,9 @@
 Priority queue implementation, using max Heap as backbone
 IMPROVEMENTS: make instance variables left, right, key, value private?
 """
-import sys
 from random import randint
+
+#dangerous methods -> change structure of heap
 
 class MaxHeap:
     def __init__(self, key, value):
@@ -14,6 +15,7 @@ class MaxHeap:
         self.parent = None
 
 
+#slightly dangerous method        
     def extract_max_priority(self, root):
         """
         returns the max priority element in heap which as it is a max heap is root
@@ -40,6 +42,7 @@ class MaxHeap:
         """
         after the method extract_max_priority is called, the heap needs to
         be reshuffled to find a new root
+        successor is always a child of node
         """
         if not node.left:
             return node
@@ -135,13 +138,16 @@ class MaxHeap:
 #DANGEROUS METHOD     
     def __insert_in_placeof(self, new_node, replacing_node):
         """
-        new_node only has its key and value set, its right, left and parent are None
+        Substitutes new_node in place of replacing_node.
+        new_node only has its key and value set, its right, left and parent are None.
         replacing_node becomes a child of new_node and has one of its children move up and become a
         child of new_node
+        
+        returns new_node, ie the node which has been newly inserted
         """
         if not new_node or not replacing_node:
-            print("ERROR: method __insert_in_placeof null values sent")
-            return
+            print("ERROR: method, __insert_in_placeof null values sent")
+            return None
         new_node.parent = replacing_node.parent #new_node parent set
         new_node.right = replacing_node #new_node right set
         replacing_node.parent = new_node    #replacing_node parent set; new_node right child parent set
@@ -167,13 +173,6 @@ class MaxHeap:
             
         return new_node
         
-        
-     
-#DANGEROUS METHOD     
-    def __switch_positions(self, ancestor, child):
-        """
-        
-        """
         
     def increment_priority(self, root, key_find, increment):
         """
@@ -254,7 +253,45 @@ class MaxHeap:
             return node
         return None
     
-        
+
+#DANGEROUS METHOD     
+    def __switch_positions(self, father, childe):
+        """
+        given a parent and its child, switch their positions exactly,
+        without altering the position of the child nodes
+        returns the child node, ie the new parent
+        named parent as father else too confusing
+        """
+        if not father or not childe:
+            print("ERROR: method, __switch_positions null attributes sent")
+            return None
+        childe.parent = father.parent   #childe.parent updated
+        father.parent = childe  #father.parent updated
+        if childe == father.left:
+            temp = father.right
+            father.left = childe.left   #parent.left updated
+            father.right = childe.right #parent.right updated
+            childe.left = father    #childe.left updated
+            childe.right = temp #childe.right updated
+            if childe.right:
+                childe.right.parent = childe    #childe.right child parent updated
+        else:   #childe == father.right
+            temp = father.left
+            father.left = childe.left   #parent.left updated
+            father.right = childe.right #parent.right updated
+            childe.right = father   #childe.left updated
+            childe.left = temp
+            if childe.left:
+                childe.left.parent = childe
+           
+        if father.left:
+            father.left.parent = father
+        if father.right:
+            father.right.parent = father
+            
+        return childe
+            
+    
 
 def main():
     sys.stdout = open("output.txt", "w")
