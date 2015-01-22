@@ -54,16 +54,34 @@ class MaxHeap:
 #DANGEROUS METHOD    
     def __move_up_tree(self, father, successor):
         """
-        moves successor(child of node) up in place of node, and 
-        hence frees up one of nodes children, for it to be moved further up
-        successor always has one child empty
-        returns node, ie the one which is to be moved up tree further
+        Moves successor(child of node) up in place of node, and 
+        hence frees up one of nodes children, for it to be moved further up.
+        Successor always has one child empty.
+        Maintains order of children which father node had
+        Returns father, ie the node which is to be moved further up tree
         
-        should handle base case where node == root
+        Handles base case where father == root
         """
-        if not father or not successor or not (successor.left and successor.right):
-            print("\n\nERROR: method __move_up_tree, null value encountered where there should not be one\n")
+        if not father or not successor or (successor.left and successor.right):
+            print("\n\nERROR: method __move_up_tree, null value encountered where there should not be one")
+            if not father:
+                print("father node null")
+            else:
+                print("father node: {}".format(father.key))
+            if not successor:
+                print("successor node null")
+            else:
+                print("successor node: {}".format(successor.key))
+            if not successor.left:
+                print("successor left child null")
+            else:
+                print("successor left child: {}".format(successor.left.key))
+            if not successor.right:
+                print("successor right child null")
+            else:
+                print("successor right child: {}\n".format(successor.right.key))
             return None
+            
         #need to change left, right of successor; parents of left and right
         #need to free up one of children of father
         #keep the order of the parent, with respect to position of child   
@@ -274,7 +292,7 @@ class MaxHeap:
             childe.right = temp #childe.right updated
             if childe.right:
                 childe.right.parent = childe    #childe.right child parent updated
-        else:   #childe == father.right
+        elif childe == father.right:   #additional precautionary check
             temp = father.left
             father.left = childe.left   #parent.left updated
             father.right = childe.right #parent.right updated
@@ -282,6 +300,9 @@ class MaxHeap:
             childe.left = temp
             if childe.left:
                 childe.left.parent = childe
+        else:
+            print("\n\nERROR: method, __switch_positions childe not a child node of father\n")
+            return None
            
         if father.left:
             father.left.parent = father
@@ -293,7 +314,6 @@ class MaxHeap:
     
 
 def main():
-    sys.stdout = open("output.txt", "w")
     heap = generate_heap()
         
         
