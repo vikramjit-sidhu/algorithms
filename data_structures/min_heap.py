@@ -93,7 +93,6 @@ class MaxHeap:
         return father
         
     
-#dangerous method    
     def insert_with_priority(self, root, new_node):
         """
         insert an element, search recursively until a position is found
@@ -101,60 +100,60 @@ class MaxHeap:
         the node which has lesser difference than new_node.key is iterated
         EDGE CASE: incase new_node will replace root
         """
-        if not root:
-            print("UNSuccesfull in breaking the universe")
+        if not root or not new_node:
+            print("\n\nERROR: method, insert_with_priority, one of nodes is null\n")
             return None
 
         if new_node.key > root.key:
-            new_node.right = root
-            root.parent = new_node
-            if root.right.key > root.left.key:
-                new_node.left = root.right
-                root.right = None
-            else:
-                new_node.left = root.left
-                root.left = None
-            new_node.left.parent = new_node
-
-            return new_node
+            return self.__insert_in_placeof(new_node, root)
         else:
             self.__insert_into_tree(root, new_node)
-
         return root
 
-
+        
     def __insert_into_tree(self, node, new_node):
-        if not node.left:
-            node.left = new_node
-            new_node.parent = node
-            return
-        elif not node.right:
-            node.right = new_node
-            new_node.parent = node
+        """
+        Goes down heap to find appropriate position for new_node
+        """
+        if not node.left or not node.right:
+            self.__insert_as_child(node, new_node)
             return
             
         if new_node.key > node.left.key:
-            #insert new_node here
-            new_node.right = node.left
-            new_node.right.parent = new_node
-            new_node.parent = node
-            node.left = new_node
+            self.__insert_in_placeof(new_node, node.left)
             return
         elif new_node.key > node.right.key:
-            #insert new_node here
-            new_node.right = node.right
-            new_node.right.parent = new_node
-            new_node.parent = node
-            node.right = new_node
+            self.__insert_in_placeof(new_node, node.right)
             return
             
+        #send new_node into subtree where it has lesser difference    
         leftdiff = node.left.key - new_node.key
         rightdiff = node.right.key - new_node.key
         if leftdiff > rightdiff:
             self.__insert_into_tree(node.right, new_node)
         else:
             self.__insert_into_tree(node.left, new_node)
-     
+
+
+#DANGEROUS METHOD            
+    def __insert_as_child(self, father, child):
+        """
+        Inserts child as a well, child of father node.
+        father node has one of its children free, so no modifications required
+        """
+        if not father or not child:
+            print("\n\nERROR: method __insert_as_child one of nodes is empty\n")
+            
+        if not father.left:
+            father.left = child
+            child.parent = father
+        elif not father.right:
+            father.right = child
+            child.parent = father
+        else:
+            print("\n\nERROR: method __insert_as_child father node does not have empty child\n")
+        return father
+            
 
 #DANGEROUS METHOD     
     def __insert_in_placeof(self, new_node, replacing_node):
@@ -162,35 +161,38 @@ class MaxHeap:
         Substitutes new_node in place of replacing_node.
         new_node only has its key and value set, its right, left and parent are None.
         replacing_node becomes a child of new_node and has one of its children move up and become a
-        child of new_node
+        child of new_node.
+        Keeps order of child moving up in new_node, ie if left child of replacing_node moves up, 
+        it will be left child in new_node.
         
-        returns new_node, ie the node which has been newly inserted
+        Returns new_node, ie the node which has been newly inserted
         """
         if not new_node or not replacing_node:
             print("\n\nERROR: method, __insert_in_placeof null values sent\n")
             return None
+            
         new_node.parent = replacing_node.parent #new_node parent set
-        new_node.right = replacing_node #new_node right set
-        replacing_node.parent = new_node    #replacing_node parent set; new_node right child parent set
+        replacing_node.parent = new_node    #replacing_node parent set; new_node one child
         
-        #setting new_node.left
+        #setting new_node children
         if replacing_node.right:
             if replacing_node.left:
                 if replacing_node.left.key > replacing_node.right.key:
                     new_node.left = replacing_node.left
+                    new_node.left.parent = new_node
+                    new_node.right = replacing_node
                     replacing_node.left = None
-                else:
-                    new_node.left = replacing_node.right
-                    replacing_node.right = None
-            else:
-                new_node.left = replacing_node.right
-                replacing_node.right = None
+                    return new_node
+            new_node.right = replacing_node.right
+            new_node.right.parent = new_node
+            new_node.left = replacing_node
+            replacing_node.right = None
         else:
             new_node.left = replacing_node.left
-            replacing_node.left = None
-            
-        if new_node.left:
-            new_node.left.parent = new_node #new_node left child parent set
+            if new_node.left:
+                new_node.left.parent = new_node
+                replacing_node.left = None
+            new_node.right = replacing_node
             
         return new_node
         
@@ -202,7 +204,7 @@ class MaxHeap:
         """
         node = self.__finding_node(root, key_find, increment)
         if not node:
-            print("Key {} not found, hence not incremented in heap".format(key_find))
+            print("\n\nWhile incrementing priority, key {} not found, hence not incremented in heap\n".format(key_find))
         else:
             new_root = self.__reshuffle_heap(node)
             if new_root:
@@ -213,8 +215,7 @@ class MaxHeap:
 
     def __finding_node(self, node, key_find, increment):
         """
-        find node whose priority has to be incremented
-        recursive method used
+        Find node whose priority has to be incremented by going down tree
         """
         if node.key == key_find:
             node.key += increment
@@ -241,34 +242,12 @@ class MaxHeap:
     
     def __reshuffle_heap(self, node):
         """
-        given node, whose key has been incremented, this method moves it up
-        the heap, if needed. handles the case where node becomes the root
+        Given node, whose key has been incremented, this method calls __switch_positions method to move
+        node up the heap, if needed. 
+        Returns node only if it becomes the root, else returns None
         """
         while node.parent and node.parent.key < node.key:
-            ancestor = node.parent
-            if node == ancestor.left:
-                ancestor.left = node.left
-                temp = ancestor.right
-                ancestor.right = node.right
-                node.left = ancestor
-                node.right = temp
-                if node.right:
-                    node.right.parent = node
-            else:
-                ancestor.right = node.right
-                temp = ancestor.left
-                ancestor.left = node.left
-                node.right = ancestor
-                node.left = temp
-                if node.left:
-                    node.left.parent = node
-            node.parent = ancestor.parent
-            ancestor.parent = node
-            if ancestor.left:
-                ancestor.left.parent = ancestor
-            if ancestor.right:
-                ancestor.right.parent = ancestor
-            
+            node = self.__switch_positions(node.parent, node)
         #base case when node becomes the root (hence check in while loop for node.parent)
         if not node.parent:
             return node
@@ -278,14 +257,13 @@ class MaxHeap:
 #DANGEROUS METHOD     
     def __switch_positions(self, father, childe):
         """
-        given a parent and its child, switch their positions exactly,
-        without altering the position of the child nodes
-        returns the child node, ie the new parent
-        named parent as father else too confusing
+        Given a parent and its child, switch their positions exactly,without altering the position of the child nodes.
+        Returns the childe node, ie the new parent
         """
         if not father or not childe:
-            print("\n\nERROR: method, __switch_positions null attributes sent\n")
+            print("\n\nERROR: method, __switch_positions null nodes sent\n")
             return None
+            
         childe.parent = father.parent   #childe.parent updated
         father.parent = childe  #father.parent updated
         if childe == father.left:
