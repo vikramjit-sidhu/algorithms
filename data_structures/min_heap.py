@@ -8,8 +8,8 @@ from random import randint
 
 class MaxHeap:
     def __init__(self, key, value):
-        self.value = value
-        self.key = key
+        self.value = int(value)
+        self.key = int(key)
         self.left = None
         self.right = None
         self.parent = None
@@ -51,11 +51,11 @@ class MaxHeap:
         return node
     
     
-#DANGEROUS METHOD    
+    #DANGEROUS METHOD    
     def __move_up_tree(self, father, successor):
         """
-        Moves successor(child of node) up in place of node, and 
-        hence frees up one of nodes children, for it to be moved further up.
+        Moves successor(child of father) up in place of father, and 
+        hence frees up one of fathers children, for it to be moved further up.
         Successor always has one child empty.
         Maintains order of children which father node had
         Returns father, ie the node which is to be moved further up tree
@@ -64,23 +64,7 @@ class MaxHeap:
         """
         if not father or not successor or (successor.left and successor.right):
             print("\n\nERROR: method __move_up_tree, null value encountered where there should not be one")
-            if not father:
-                print("father node null")
-            else:
-                print("father node: {}".format(father.key))
-            if not successor:
-                print("successor node null")
-            else:
-                print("successor node: {}".format(successor.key))
-            if not successor.left:
-                print("successor left child null")
-            else:
-                print("successor left child: {}".format(successor.left.key))
-            if not successor.right:
-                print("successor right child null")
-            else:
-                print("successor right child: {}\n".format(successor.right.key))
-            return None
+            self.__debug_print(father, successor)
             
         #need to change left, right of successor; parents of left and right
         #need to free up one of children of father
@@ -89,20 +73,21 @@ class MaxHeap:
         if successor == father.left:
             temp = father.right
             father.right = None
+            if successor.right:
+                successor.left = successor.right
+            successor.right = temp
         elif successor == father.right:
             temp = father.left
             father.left = None
+            if successor.left:
+                successor.right = successor.left
+            successor.left = temp
         else:   #NOTE: due to this check, need not change successor.parent, as it is already set to father
             print("\n\nERROR: method __move_up_tree, successor is not a child of father\n")
+            self.__debug_print(father, successor)
             return None
 
         temp.parent = successor #updating parent of temp node
-        
-        #finding out which of child nodes, successor has free, assigning it to other child of father
-        if not successor.left:
-            successor.left = temp
-        else:
-            successor.right = temp
         
         if not father.parent: #base case where node == root, return successor
             father = None
@@ -111,7 +96,7 @@ class MaxHeap:
         return father
         
     
-    def insert_with_priority(self, root, new_node):
+    def insert_node(self, root, new_node):
         """
         insert an element, search recursively until a position is found
         the first element lesser than new_node.key is where it is inserted
@@ -137,11 +122,11 @@ class MaxHeap:
             self.__insert_as_child(node, new_node)
             return
             
-        if new_node.key > node.left.key:
-            self.__insert_in_placeof(new_node, node.left)
+        if new_node.key >= node.left.key:
+            self.__insert_in_placeof(node.left, new_node)
             return
-        elif new_node.key > node.right.key:
-            self.__insert_in_placeof(new_node, node.right)
+        elif new_node.key >= node.right.key:
+            self.__insert_in_placeof(node.right, new_node)
             return
             
         #send new_node into subtree where it has lesser difference    
@@ -153,7 +138,7 @@ class MaxHeap:
             self.__insert_into_tree(node.left, new_node)
 
 
-#DANGEROUS METHOD            
+    #DANGEROUS METHOD            
     def __insert_as_child(self, father, child):
         """
         Inserts child as a well, child of father node.
@@ -173,7 +158,7 @@ class MaxHeap:
         return father
             
 
-#DANGEROUS METHOD     
+    #DANGEROUS METHOD     
     def __insert_in_placeof(self, new_node, replacing_node):
         """
         Substitutes new_node in place of replacing_node.
@@ -272,7 +257,7 @@ class MaxHeap:
         return None
     
 
-#DANGEROUS METHOD     
+    #DANGEROUS METHOD     
     def __switch_positions(self, father, childe):
         """
         Given a parent and its child, switch their positions exactly,without altering the position of the child nodes.
@@ -280,6 +265,7 @@ class MaxHeap:
         """
         if not father or not childe:
             print("\n\nERROR: method, __switch_positions null nodes sent\n")
+            self.__debug_print(father, childe)
             return None
             
         childe.parent = father.parent   #childe.parent updated
@@ -296,12 +282,13 @@ class MaxHeap:
             temp = father.left
             father.left = childe.left   #parent.left updated
             father.right = childe.right #parent.right updated
-            childe.right = father   #childe.left updated
+            childe.right = father   #childe.right updated
             childe.left = temp
             if childe.left:
                 childe.left.parent = childe
         else:
             print("\n\nERROR: method, __switch_positions childe not a child node of father\n")
+            self.__debug_print(father, childe)
             return None
            
         if father.left:
@@ -310,8 +297,47 @@ class MaxHeap:
             father.right.parent = father
             
         return childe
+        
+        
+    def __debug_print(self, parent, child):
+        """
+        Function used for debugging, prints parent and child (if present),
+        along with their child values
+        """
+        if parent:
+            print("parent present; key -> {}".format(parent.key))
+            if parent.right:
+                print("parent right child -> {}".format(parent.right.key))
+            else:
+                print("parent right child null")
+            if parent.left:
+                print("parent left child -> {}".format(parent.left.key))
+            else:
+                print("parent left child null")   
+        else:
+            print("parent node null")
             
+        if child:
+            print("child present; key -> {}".format(child.key))
+            if child.right:
+                print("child right child -> {}".format(child.right.key))
+            else:
+                print("child right child null")
+            if child.left:
+                print("child left child -> {}".format(child.left.key))
+            else:
+                print("child left child null")   
+        else:
+            print("child node null")
     
+    
+    def inorder_traversal(self, node):
+        if not node:
+            return "null"
+        print("{} <- {} -> {}".format(self.inorder_traversal(node.left), node.key, self.inorder_traversal(node.right)))
+        return node.key
+        
+        
 
 def main():
     heap = generate_heap()
@@ -322,20 +348,28 @@ def generate_heap():
     #read list to generate heap from external file
     node_value = 1
     root = MaxHeap(randint(0, 130), node_value)
+    print("\nInorder Traversal")
+    root.inorder_traversal(root)
+    print("\n")
 
     for i in range(0, 130, 7):
         node_value += 1
         new_node = MaxHeap(i, node_value)
-        root = root.insert_with_priority(root, new_node)
+        print("Inserting node no {} with key -> {} into heap".format(new_node.value, new_node.key))
+        root = root.insert_node(root, new_node)
+        print("\nInorder Traversal")
+        root.inorder_traversal(root)
+        print("\n")
+
+    
         
     # for i in range(0, 130, 7):
-        # print("calling method root.key -> {}, key_find -> {}".format(root.key, i))
         # root = root.increment_priority(root, i, randint(0, 130))
-    root = root.increment_priority(root, 0, randint(0, 130))
+        
 
-    while root:
-        max_elt, root = root.extract_max_priority(root)
-        print("\n{}".format(max_elt))
+    # while root:
+        # max_elt, root = root.extract_max_priority(root)
+        # print("\n{}".format(max_elt))
         
     
         
