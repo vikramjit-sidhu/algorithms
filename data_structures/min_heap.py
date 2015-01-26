@@ -10,6 +10,7 @@ class MaxHeap:
     def __init__(self, key, value):
         self.value = int(value)
         self.key = int(key)
+        self.height = 0 #height : the number of levels below this node
         self.left = None
         self.right = None
         self.parent = None
@@ -89,6 +90,10 @@ class MaxHeap:
 
         temp.parent = successor #updating parent of temp node
         
+        #updating heights
+        self.__update_height(successor)
+        self.__update_height(father)
+
         if not father.parent: #base case where node == root, return successor
             father = None
             successor.parent = None
@@ -155,6 +160,8 @@ class MaxHeap:
             child.parent = father
         else:
             print("\n\nERROR: method __insert_as_child father node does not have empty child\n")
+
+        self.__update_height(father)
         return father
             
 
@@ -196,7 +203,10 @@ class MaxHeap:
                 new_node.left.parent = new_node
                 replacing_node.left = None
             new_node.right = replacing_node
-            
+
+        self.__update_height(replacing_node)
+        self.__update_height(new_node)
+
         return new_node
         
         
@@ -295,9 +305,28 @@ class MaxHeap:
             father.left.parent = father
         if father.right:
             father.right.parent = father
-            
+
+        self.__update_height(father)
+        self.__update_height(childe)
+
         return childe
-        
+    
+
+    def __update_height(self, node):
+        """
+        Given node, updates height attribute, by taking max of
+        the height of its 2 children (if they exist)
+        """
+        if node.left:
+            h1 = node.left.height
+        else:
+            h1 = 0
+        if node.right:
+            h2 = node.right.height
+        else:
+            h2 = 0
+        node.height = max(h1, h2)
+
         
     def __debug_print(self, parent, child):
         """
@@ -329,8 +358,8 @@ class MaxHeap:
                 print("child left child null")   
         else:
             print("child node null")
-    
-    
+
+
     def inorder_traversal(self, node):
         if not node:
             return "null"
