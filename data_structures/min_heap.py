@@ -113,9 +113,12 @@ class MaxHeap:
             return None
 
         if new_node.key > root.key:
-            return self.__insert_in_placeof(new_node, root)
+            new_root_tobalance = self.__insert_in_placeof(new_node, root)
+            self.__check_node_balance(new_root_tobalance)
+            return new_root_tobalance
         else:
-            self.__insert_into_tree(root, new_node)
+            balance_node = self.__insert_into_tree(root, new_node)
+            self.__check_node_balance(balance_node)
         return root
 
         
@@ -124,23 +127,20 @@ class MaxHeap:
         Goes down heap to find appropriate position for new_node
         """
         if not node.left or not node.right:
-            self.__insert_as_child(node, new_node)
-            return
+            return self.__insert_as_child(node, new_node)
             
         if new_node.key >= node.left.key:
-            self.__insert_in_placeof(node.left, new_node)
-            return
+            return self.__insert_in_placeof(node.left, new_node)
         elif new_node.key >= node.right.key:
-            self.__insert_in_placeof(node.right, new_node)
-            return
+            return self.__insert_in_placeof(node.right, new_node)
             
-        #send new_node into subtree where it has lesser difference    
-        leftdiff = node.left.key - new_node.key
-        rightdiff = node.right.key - new_node.key
-        if leftdiff > rightdiff:
-            self.__insert_into_tree(node.right, new_node)
+        #send new_node into subtree which has lesser height
+        if node.right.height <= node.left.height:
+            check_balance_node = self.__insert_into_tree(node.right, new_node)
         else:
-            self.__insert_into_tree(node.left, new_node)
+            check_balance_node = self.__insert_into_tree(node.left, new_node)
+
+        return check_balance_node
 
 
     #DANGEROUS METHOD            
@@ -208,7 +208,56 @@ class MaxHeap:
         self.__update_height(new_node)
 
         return new_node
-        
+
+
+    def __check_node_balance(self, node_tocheck):
+        """
+        Given node_tocheck, finds if height difference between subtrees of node_tocheck is <= 2.
+        If this is not the case, the node needs to be rebalanced by calling method 
+        The __check_node_balance method also checks balance of parent of node_tocheck recursively, upto root 
+        """
+        while node_tocheck:
+            diff = self.__height_difference_subtrees(node_tocheck)
+            if diff > 2:
+                self.__balance_node(node_tocheck, diff-2)
+            node_tocheck = node_tocheck.parent
+
+
+    def __balance_node(self, main_balance_node, height_needed):
+        """
+        Given node whose subchildren are imbalanced (height difference > 2), balances them out
+        height_needed is the difference in height between the 2 nodes, a subtree of this height is 
+        extracted from the child having a larger height than the other
+        """
+        node = main_balance_node
+        while node.left or node.right:
+            if node.left.height >= node.right.height:
+                node = node.left
+            else:
+                node = node.right
+
+        #find child to insert the node which is removed.
+        if main_balance_node.left.height < main_balance_node:
+            subtree_insert_node = main_balance_node.left
+        else:
+            subtree_insert_node = main_balance_node.right
+
+        height_obtained = 1
+        while height_obtained < height_needed:
+            node = node.parent
+            height_obtained += 1
+
+        #remove node from its subtree
+        parent_node = node.parent
+        node.parent = None
+        if node == parent_node.left:
+            parent_node.left = None
+        else:
+            parent_node.right = None
+        self.__update_height_upto(parent_node, main_balance_node)
+
+        self.__insert_subtree(subtree_insert_into, node)
+
         
     def increment_priority(self, root, key_find, increment):
         """
@@ -234,16 +283,9 @@ class MaxHeap:
             node.key += increment
             return node
         elif node.left and node.right and node.left.key > key_find and node.right.key > key_find:
-            ldiff = node.left.key - key_find
-            rdiff = node.right.key - key_find
-            if ldiff < rdiff:
-                rval = self.__finding_node(node.left, key_find, increment)
-                if not rval:
-                    rval = self.__finding_node(node.right, key_find, increment)
-            else:
-                rval = self.__finding_node(node.right, key_find, increment)
-                if not rval:
-                    rval = self.__finding_node(node.left, key_find, increment)
+            rval = self.__finding_node(node.left, key_find, increment)
+            if not rval:
+               rval = self.__finding_node(node.right, key_find, increment)
             return rval
         elif node.left and node.left.key >= key_find:
             return self.__finding_node(node.left, key_find, increment)
@@ -317,6 +359,9 @@ class MaxHeap:
         Given node, updates height attribute, by taking max of
         the height of its 2 children (if they exist)
         """
+        if not node:
+            print("\n\nERROR: method __update_height, method node is null\n")
+            return None
         if node.left:
             h1 = node.left.height
         else:
@@ -326,6 +371,35 @@ class MaxHeap:
         else:
             h2 = 0
         node.height = max(h1, h2)
+
+
+    def __update_height_upto(self, update_height_node, limit_node):
+        """
+        Updates height of nodes upto limit_node
+        Does NOT update height of limit_node
+        """
+        while update_height_node != limit_node:
+            self.__update_height(update_height_node)
+            update_height_node = update_height_node.parent
+
+
+
+    def __height_difference_subtrees(self, node):
+        """
+        Returns the height difference between the 2 children of node
+        """
+        if not node:
+            print("\n\nERROR: method __update_height, method node is null\n")
+            return None
+        if node.left:
+            left = node.left.height
+        else:
+            left = 0
+        if node.right:
+            right = node.right.height
+        else:
+            right = 0
+        return int(abs(left-right))
 
         
     def __debug_print(self, parent, child):
