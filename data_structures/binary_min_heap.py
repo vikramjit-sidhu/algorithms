@@ -162,7 +162,7 @@ class MaxHeap:
         else:
             print("\n\nERROR: method __insert_as_child father node does not have empty child\n")
 
-        father.height = max(1, father.height)
+        self.__update_height(father)
         return father
             
 
@@ -222,9 +222,6 @@ class MaxHeap:
         self.__update_height(replacing_node)
         self.__update_height(new_node)
         
-        #handling case where root is updated
-
-        
         return new_node
 
 
@@ -250,7 +247,7 @@ class MaxHeap:
         A subtree of this height is extracted from the child having a larger height than the other
         """
         #find child to insert the node which is removed, ie find subtree with lesser height
-        if main_balance_node.left.height < main_balance_node:
+        if main_balance_node.left.height < main_balance_node.right.height:
             subtree_insert_node = main_balance_node.left
         else:
             subtree_insert_node = main_balance_node.right
@@ -437,17 +434,13 @@ class MaxHeap:
         the height of its 2 children (if they exist)
         """
         if not node:
-            print("\n\nERROR: method __update_height, method node is null\n")
+            print("\n\nERROR: method __update_height method, node is null\n")
             return None
-        if node.left:
-            h1 = node.left.height
-        else:
-            h1 = 0
-        if node.right:
-            h2 = node.right.height
-        else:
-            h2 = 0
-        node.height = max(h1, h2)
+
+        ht_left = node.left.height if node.left else 0
+        ht_right = node.right.height if node.right else 0
+
+        node.height = max(ht_left, ht_right) + 1
 
 
     def __update_height_upto(self, update_height_node, limit_node):
@@ -455,6 +448,9 @@ class MaxHeap:
         Updates height of nodes upto limit_node
         Does NOT update height of limit_node
         """
+        if not update_height_node:
+            print("\n\nERROR: method __update_height_upto, update_height_node is null\n")
+            return None
         while update_height_node != limit_node:
             self.__update_height(update_height_node)
             update_height_node = update_height_node.parent
@@ -468,15 +464,11 @@ class MaxHeap:
         if not node:
             print("\n\nERROR: method __update_height, method node is null\n")
             return None
-        if node.left:
-            left = node.left.height
-        else:
-            left = 0
-        if node.right:
-            right = node.right.height
-        else:
-            right = 0
-        return int(abs(left-right))
+
+        ht_left = node.left.height if node.left else 0
+        ht_right = node.right.height if node.right else 0
+
+        return int(abs(ht_left-ht_right))
 
         
     def __debug_print(self, parent, child):
@@ -514,7 +506,8 @@ class MaxHeap:
     def inorder_traversal(self, node):
         if not node:
             return "null"
-        print("{} <- {} ({}) -> {}".format(self.inorder_traversal(node.left), node.key, node.height, self.inorder_traversal(node.right)))
+        par = node.parent.key if node.parent else "null"
+        print("{} <-- {} parent-{}, height-{} --> {}".format(self.inorder_traversal(node.left), node.key, par, node.height, self.inorder_traversal(node.right)))
         return node.key
         
         
