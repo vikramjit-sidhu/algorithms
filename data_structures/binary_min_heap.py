@@ -1,5 +1,5 @@
 """
-Priority queue implementation, using max Heap as backbone
+Priority queue implementation, using Binary min Heap as backbone
 IMPROVEMENTS: make instance variables left, right, key, value private?
 """
 from random import randint
@@ -118,6 +118,7 @@ class MaxHeap:
             return new_root_tobalance
         else:
             balance_node = self.__insert_into_tree(root, new_node)
+            self.__update_height_upto(balance_node, None)
             self.__check_node_balance(balance_node)
         return root
 
@@ -161,7 +162,7 @@ class MaxHeap:
         else:
             print("\n\nERROR: method __insert_as_child father node does not have empty child\n")
 
-        self.__update_height(father)
+        father.height = max(1, father.height)
         return father
             
 
@@ -169,20 +170,34 @@ class MaxHeap:
     def __insert_in_placeof(self, new_node, replacing_node):
         """
         Substitutes new_node in place of replacing_node.
+        
         new_node only has its key and value set, its right, left and parent are None.
+        
         replacing_node becomes a child of new_node and has one of its children move up and become a
         child of new_node.
+        
         Keeps order of child moving up in new_node, ie if left child of replacing_node moves up, 
         it will be left child in new_node.
+        
+        Need to update child attribute (left or right) of replacing_node.parent
+        Only updates height of new_node and replacing_node
         
         Returns new_node, ie the node which has been newly inserted
         """
         if not new_node or not replacing_node:
             print("\n\nERROR: method, __insert_in_placeof null values sent\n")
             return None
-            
-        new_node.parent = replacing_node.parent #new_node parent set
+        
+        grandfather = replacing_node.parent
+        new_node.parent = grandfather #new_node parent set
         replacing_node.parent = new_node    #replacing_node parent set; new_node one child
+        
+        #setting child attribute of grandfather if it exists, updating it to new_node from replacing_node
+        if grandfather:
+            if grandfather.left == replacing_node:
+                grandfather.left = new_node
+            else:
+                grandfather.right = new_node
         
         #setting new_node children
         if replacing_node.right:
@@ -206,7 +221,10 @@ class MaxHeap:
 
         self.__update_height(replacing_node)
         self.__update_height(new_node)
+        
+        #handling case where root is updated
 
+        
         return new_node
 
 
@@ -217,30 +235,33 @@ class MaxHeap:
         The __check_node_balance method also checks balance of parent of node_tocheck recursively, upto root 
         """
         while node_tocheck:
-            diff = self.__height_difference_subtrees(node_tocheck)
+            diff = self.height_difference_subtrees(node_tocheck)
             if diff > 2:
                 self.__balance_node(node_tocheck, diff-2)
+            self.__update_height(node_tocheck)
             node_tocheck = node_tocheck.parent
 
 
+    #DANGEROUS METHOD
     def __balance_node(self, main_balance_node, height_needed):
         """
         Given node whose subchildren are imbalanced (height difference > 2), balances them out
-        height_needed is the difference in height between the 2 nodes, a subtree of this height is 
-        extracted from the child having a larger height than the other
+        height_needed is the height of the subtree required to balance out the nodes
+        A subtree of this height is extracted from the child having a larger height than the other
         """
-        node = main_balance_node
-        while node.left or node.right:
-            if node.left.height >= node.right.height:
-                node = node.left
-            else:
-                node = node.right
-
-        #find child to insert the node which is removed.
+        #find child to insert the node which is removed, ie find subtree with lesser height
         if main_balance_node.left.height < main_balance_node:
             subtree_insert_node = main_balance_node.left
         else:
             subtree_insert_node = main_balance_node.right
+        
+        #extract subtree of height height_needed, always from subtree with greater height
+        node = main_balance_node
+        while node.left or node.right:
+            left = node.left.height if node.left else 0
+            right = node.right.height if node.right else 0
+            
+            node = node.left if left >= right else node.right
 
         height_obtained = 1
         while height_obtained < height_needed:
@@ -248,16 +269,72 @@ class MaxHeap:
             height_obtained += 1
 
         #remove node from its subtree
+        #DANGEROUS PART
         parent_node = node.parent
         node.parent = None
         if node == parent_node.left:
             parent_node.left = None
         else:
             parent_node.right = None
+            
         self.__update_height_upto(parent_node, main_balance_node)
 
-        self.__insert_subtree(subtree_insert_into, node)
+        final_insert_position = self.__insert_subtree(subtree_insert_into, node)
+        self.__update_height_upto(final_insert_position, main_balance_node)
+       
+        
+    def __insert_subtree(self, subtree_insert_into, subtree_toinsert):
+        """
+        Insert subtree_toinsert into subtree subtree_insert into, insertion follows normal rule of insertion.
+        Incase a node is replaced by subtree_toinsert, it will become the new subtree_toinsert and will recurse down heap
+        The subtree with lesser height is chosen to insert into
+        """
+        current_node = subtree_insert_into
+        
+        while subtree_toinsert:
+            if not current_node.left or not current_node.right:
+                final_insertion_postition = self.__insert_as_child(current_node, subtree_to_insert)
+                subtree_toinsert = None
+                continue
+            
+            if current_node.left.key < subtree_toinsert.key:
+                subtree_toinsert = self.__replace_nodes(node.left, subtree_toinsert)
+            elif current_node.right.key < subtree_toinsert.key:
+                subtree_toinsert = self.__replace_nodes(node.right, subtree_toinsert)
 
+            if current_node.left.height < current_node.right.height:
+                current_node = current_node.left
+            else:
+                current_node = current_node.right
+                
+        return final_insertion_postition
+
+        
+    #DANGEROUS METHOD    
+    def __replace_nodes(self, node, switch_node):
+        """
+        Performs a replacing act, removes node from its position in heap and adds switch_node in place of it
+        Need to update grandfather node (parent of node) as well
+        Returns node, with parent null
+        """
+        if not node or not switch_node:
+            print("\n\nERROR: method __switch_positions, nodes empty")
+            return None
+        
+        grandfather = node.parent
+        node.parent = None
+        switch_node.parent = grandfather
+        
+        #setting child attribute of grandfather if it exists, updating it to new_node from replacing_node
+        if grandfather:
+            if grandfather.left == node:
+                grandfather.left = switch_node
+            else:
+                grandfather.right = switch_node
+            self.__update_height(grandfather)
+        
+        return node
+    
         
     def increment_priority(self, root, key_find, increment):
         """
@@ -384,7 +461,7 @@ class MaxHeap:
 
 
 
-    def __height_difference_subtrees(self, node):
+    def height_difference_subtrees(self, node):
         """
         Returns the height difference between the 2 children of node
         """
@@ -437,7 +514,7 @@ class MaxHeap:
     def inorder_traversal(self, node):
         if not node:
             return "null"
-        print("{} <- {} -> {}".format(self.inorder_traversal(node.left), node.key, self.inorder_traversal(node.right)))
+        print("{} <- {} ({}) -> {}".format(self.inorder_traversal(node.left), node.key, node.height, self.inorder_traversal(node.right)))
         return node.key
         
         
