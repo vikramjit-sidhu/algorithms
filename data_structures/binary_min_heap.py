@@ -2,6 +2,7 @@
 Priority queue implementation, using Binary min Heap as backbone
 IMPROVEMENTS: make instance variables left, right, key, value private?
 """
+import pdb
 from random import randint
 
 #dangerous methods -> change structure of heap
@@ -113,7 +114,7 @@ class MaxHeap:
             return None
 
         if new_node.key > root.key:
-            new_root_tobalance = self.__insert_in_placeof(new_node, root)
+            new_root_tobalance = self.__insert_in_placeof(root, new_node)
             self.__check_node_balance(new_root_tobalance)
             return new_root_tobalance
         else:
@@ -167,7 +168,7 @@ class MaxHeap:
             
 
     #DANGEROUS METHOD     
-    def __insert_in_placeof(self, new_node, replacing_node):
+    def __insert_in_placeof(self, replacing_node, new_node):
         """
         Substitutes new_node in place of replacing_node.
         
@@ -233,8 +234,13 @@ class MaxHeap:
         If this is not the case, the node needs to be rebalanced by calling method 
         The __check_node_balance method also checks balance of parent of node_tocheck recursively, upto root 
         """
+        # self.inorder_traversal(node_tocheck)
+        # print("in check_node_balance method, node_tocheck: {}".format(node_tocheck.key))
+        # print("right height: {}".format(node_tocheck.right.height+1)) if node_tocheck.right else print("right height 0")
+        # print("left height: {}".format(node_tocheck.left.height+1)) if node_tocheck.left else print("left height 0")
         while node_tocheck:
             diff = self.height_difference_subtrees(node_tocheck)
+            # print("current node_tocheck: {}, height diff: {}".format(node_tocheck.key, diff))
             if diff > 2:
                 self.__balance_node(node_tocheck, diff-2)
             self.__update_height(node_tocheck)
@@ -248,18 +254,19 @@ class MaxHeap:
         height_needed is the height of the subtree required to balance out the nodes
         A subtree of this height is extracted from the child having a larger height than the other
         """
+        print("in balance_node method, with main_balance_node: {}, height needed: {}".format(main_balance_node.key, height_needed))
+
         #find child to insert the node which is removed, ie find subtree with lesser height
         if main_balance_node.left.height < main_balance_node.right.height:
-            subtree_insert_node = main_balance_node.left
+            subtree_insert_into = main_balance_node.left
         else:
-            subtree_insert_node = main_balance_node.right
+            subtree_insert_into = main_balance_node.right
         
         #extract subtree of height height_needed, always from subtree with greater height
         node = main_balance_node
         while node.left or node.right:
-            left = node.left.height if node.left else 0
-            right = node.right.height if node.right else 0
-            
+            left = node.left.height+1 if node.left else 0
+            right = node.right.height+1 if node.right else 0
             node = node.left if left >= right else node.right
 
         height_obtained = 1
@@ -292,7 +299,7 @@ class MaxHeap:
         
         while subtree_toinsert:
             if not current_node.left or not current_node.right:
-                final_insertion_postition = self.__insert_as_child(current_node, subtree_to_insert)
+                final_insertion_postition = self.__insert_as_child(current_node, subtree_toinsert)
                 subtree_toinsert = None
                 continue
             
@@ -439,6 +446,10 @@ class MaxHeap:
             print("\n\nERROR: method __update_height method, node is null\n")
             return None
 
+        if not node.left and not node.right:
+            node.height = 0
+            return
+
         ht_left = node.left.height if node.left else 0
         ht_right = node.right.height if node.right else 0
 
@@ -467,8 +478,8 @@ class MaxHeap:
             print("\n\nERROR: method __update_height, method node is null\n")
             return None
 
-        ht_left = node.left.height if node.left else 0
-        ht_right = node.right.height if node.right else 0
+        ht_left = node.left.height+1 if node.left else 0
+        ht_right = node.right.height+1 if node.right else 0
 
         return int(abs(ht_left-ht_right))
 
@@ -523,21 +534,17 @@ def generate_heap():
     #read list to generate heap from external file
     node_value = 1
     root = MaxHeap(randint(0, 130), node_value)
-    print("\nInorder Traversal")
-    root.inorder_traversal(root)
-    print("\n")
 
     for i in range(0, 130, 7):
         node_value += 1
         new_node = MaxHeap(i, node_value)
-        print("Inserting node no {} with key -> {} into heap".format(new_node.value, new_node.key))
+        print("\n\ninserting node with key: {}".format(new_node.key))
         root = root.insert_node(root, new_node)
-        print("\nInorder Traversal")
         root.inorder_traversal(root)
-        print("\n")
 
-    
-        
+
+    root.inorder_traversal(root)
+
     # for i in range(0, 130, 7):
         # root = root.increment_priority(root, i, randint(0, 130))
         
