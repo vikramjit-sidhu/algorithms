@@ -171,7 +171,7 @@ class MaxHeap:
         """
         Substitutes new_node in place of replacing_node.
         
-        new_node only has its key and value set, its right, left and parent are None.
+        new_node only has its key and value set, its right, left and parent are None, height = 0.
         
         replacing_node becomes a child of new_node and has one of its children move up and become a
         child of new_node.
@@ -207,6 +207,8 @@ class MaxHeap:
                     new_node.left.parent = new_node
                     new_node.right = replacing_node
                     replacing_node.left = None
+                    self.__update_height(replacing_node)
+                    self.__update_height(new_node)
                     return new_node
             new_node.right = replacing_node.right
             new_node.right.parent = new_node
