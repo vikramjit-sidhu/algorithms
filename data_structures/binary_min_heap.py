@@ -71,6 +71,7 @@ class MaxHeap:
         #need to change left, right of successor; parents of left and right
         #need to free up one of children of father
         #keep the order of the parent, with respect to position of child   
+        #NOTE: due to this check, need not change successor.parent, as it is already set to father
         
         if successor == father.left:
             temp = father.right
@@ -84,7 +85,7 @@ class MaxHeap:
             if successor.left:
                 successor.right = successor.left
             successor.left = temp
-        else:   #NOTE: due to this check, need not change successor.parent, as it is already set to father
+        else:
             print("\n\nERROR: method __move_up_tree, successor is not a child of father\n")
             self.__debug_print(father, successor)
             return None
@@ -107,7 +108,7 @@ class MaxHeap:
         insert an element, search recursively until a position is found
         the first element lesser than new_node.key is where it is inserted
         the node which has lesser difference than new_node.key is iterated
-        EDGE CASE: incase new_node will replace root
+        EDGE CASE: new_node will replace root
         """
         if not root or not new_node:
             print("\n\nERROR: method, insert_with_priority, one of nodes is null\n")
@@ -149,6 +150,7 @@ class MaxHeap:
     def __insert_as_child(self, father, child):
         """
         Inserts child as a well, child of father node.
+        child node has left, right, parent as null, height = 0
         father node has one of its children free, so no modifications required
         """
         if not father or not child:
@@ -162,6 +164,7 @@ class MaxHeap:
             child.parent = father
         else:
             print("\n\nERROR: method __insert_as_child father node does not have empty child\n")
+            return None
 
         self.__update_height(father)
         return father
@@ -174,14 +177,11 @@ class MaxHeap:
         
         new_node only has its key and value set, its right, left and parent are None, height = 0.
         
-        replacing_node becomes a child of new_node and has one of its children move up and become a
-        child of new_node.
-        
-        Keeps order of child moving up in new_node, ie if left child of replacing_node moves up, 
-        it will be left child in new_node.
+        replacing_node becomes a child of new_node
+        The other child of new_node is kept blank as the subtree may need to be balanced
         
         Need to update child attribute (left or right) of replacing_node.parent
-        Only updates height of new_node and replacing_node
+        Updates height of new_node and replacing_node
         
         Returns new_node, ie the node which has been newly inserted
         """
@@ -200,31 +200,11 @@ class MaxHeap:
             else:
                 grandfather.right = new_node
         
-        #setting new_node children
-        if replacing_node.right:
-            if replacing_node.left:
-                if replacing_node.left.key > replacing_node.right.key:
-                    new_node.left = replacing_node.left
-                    new_node.left.parent = new_node
-                    new_node.right = replacing_node
-                    replacing_node.left = None
-                    self.__update_height(replacing_node)
-                    self.__update_height(new_node)
-                    return new_node
-            new_node.right = replacing_node.right
-            new_node.right.parent = new_node
-            new_node.left = replacing_node
-            replacing_node.right = None
-        else:
-            new_node.left = replacing_node.left
-            if new_node.left:
-                new_node.left.parent = new_node
-                replacing_node.left = None
-            new_node.right = replacing_node
-
-        self.__update_height(replacing_node)
-        self.__update_height(new_node)
+        new_node.left = replacing_node
         
+        self.__update_height(new_node)
+        self.__update_height(replacing_node)
+            
         return new_node
 
 
@@ -239,11 +219,12 @@ class MaxHeap:
         # print("right height: {}".format(node_tocheck.right.height+1)) if node_tocheck.right else print("right height 0")
         # print("left height: {}".format(node_tocheck.left.height+1)) if node_tocheck.left else print("left height 0")
         while node_tocheck:
-            diff = self.height_difference_subtrees(node_tocheck)
+            self.__update_height(node_tocheck)
+            diff = int(abs(self.find_height(node_tocheck.left) - self.find_height(node_tocheck.right)))
             # print("current node_tocheck: {}, height diff: {}".format(node_tocheck.key, diff))
             if diff > 2:
                 self.__balance_node(node_tocheck, diff-2)
-            self.__update_height(node_tocheck)
+                self.__update_height(node_tocheck)
             node_tocheck = node_tocheck.parent
 
 
@@ -256,17 +237,11 @@ class MaxHeap:
         """
         print("in balance_node method, with main_balance_node: {}, height needed: {}".format(main_balance_node.key, height_needed))
 
-        #find child to insert the node which is removed, ie find subtree with lesser height
-        if main_balance_node.left.height < main_balance_node.right.height:
-            subtree_insert_into = main_balance_node.left
-        else:
-            subtree_insert_into = main_balance_node.right
-        
         #extract subtree of height height_needed, always from subtree with greater height
         node = main_balance_node
         while node.left or node.right:
-            left = node.left.height+1 if node.left else 0
-            right = node.right.height+1 if node.right else 0
+            left = self.find_height(node.left)
+            right = self.find_height(node.right)
             node = node.left if left >= right else node.right
 
         height_obtained = 1
@@ -278,14 +253,15 @@ class MaxHeap:
         #DANGEROUS PART
         parent_node = node.parent
         node.parent = None
-        if node == parent_node.left:
+        if parent_node and node == parent_node.left:
             parent_node.left = None
         else:
             parent_node.right = None
             
         self.__update_height_upto(parent_node, main_balance_node)
 
-        final_insert_position = self.__insert_subtree(subtree_insert_into, node)
+        #Even after subtree of height 'heigh_needed is extracted, there is still a height difference of at least 2 between nodes
+        final_insert_position = self.__insert_subtree(main_balance_node, node)
         self.__update_height_upto(final_insert_position, main_balance_node)
        
         
@@ -320,6 +296,7 @@ class MaxHeap:
     def __replace_nodes(self, node, switch_node):
         """
         Performs a replacing act, removes node from its position in heap and adds switch_node in place of it
+        switch_node could have a subtree, as could node
         Need to update grandfather node (parent of node) as well
         Returns node, with parent null
         """
@@ -469,21 +446,16 @@ class MaxHeap:
             update_height_node = update_height_node.parent
 
 
-
-    def height_difference_subtrees(self, node):
+    def find_height(self, node):
         """
-        Returns the height difference between the 2 children of node
+        Returns the height of node, 0 if node is null. node.height + 1 otherwise
         """
         if not node:
-            print("\n\nERROR: method __update_height, method node is null\n")
-            return None
+            return 0
+        else:
+            return node.height + 1
+            
 
-        ht_left = node.left.height+1 if node.left else 0
-        ht_right = node.right.height+1 if node.right else 0
-
-        return int(abs(ht_left-ht_right))
-
-        
     def __debug_print(self, parent, child):
         """
         Function used for debugging, prints parent and child (if present),
