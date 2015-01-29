@@ -214,14 +214,9 @@ class MaxHeap:
         If this is not the case, the node needs to be rebalanced by calling method 
         The __check_node_balance method also checks balance of parent of node_tocheck recursively, upto root 
         """
-        # self.inorder_traversal(node_tocheck)
-        # print("in check_node_balance method, node_tocheck: {}".format(node_tocheck.key))
-        # print("right height: {}".format(node_tocheck.right.height+1)) if node_tocheck.right else print("right height 0")
-        # print("left height: {}".format(node_tocheck.left.height+1)) if node_tocheck.left else print("left height 0")
         while node_tocheck:
             self.__update_height(node_tocheck)
             diff = int(abs(self.find_height(node_tocheck.left) - self.find_height(node_tocheck.right)))
-            # print("current node_tocheck: {}, height diff: {}".format(node_tocheck.key, diff))
             if diff > 2:
                 self.__balance_node(node_tocheck, diff-2)
                 self.__update_height(node_tocheck)
@@ -488,13 +483,30 @@ class MaxHeap:
             print("child node null")
 
 
-    def inorder_traversal(self, node):
-        if not node:
+    def bfs(self, root):
+        """
+        Breadth first search traversal of heap
+        """
+        if not root:
             return "null"
-        par = node.parent.key if node.parent else "null"
-        print("{} <-- {} parent-{}, height-{} --> {}".format(self.inorder_traversal(node.left), node.key, par, node.height, self.inorder_traversal(node.right)))
-        return node.key
-        
+
+        current_level = []
+        current_level.append(root)
+        next_level = []
+
+        while current_level or next_level:
+            if not current_level:
+                current_level = list(next_level)
+                next_level = []
+                print()
+            node = current_level.pop()
+            baap = node.parent.key if node.parent else "null"
+            print("{} [parent->{}; height->{}]".format(node.key, baap, node.height), end = "   ")
+            if node.left:
+                next_level.append(node.left)
+            if node.right:
+                next_level.append(node.right)
+        print("\n\n")
         
 
 def main():
@@ -512,10 +524,10 @@ def generate_heap():
         new_node = MaxHeap(i, node_value)
         print("\n\ninserting node with key: {}".format(new_node.key))
         root = root.insert_node(root, new_node)
-        root.inorder_traversal(root)
+        root.bfs(root)
 
 
-    root.inorder_traversal(root)
+    root.bfs(root)
 
     # for i in range(0, 130, 7):
         # root = root.increment_priority(root, i, randint(0, 130))
