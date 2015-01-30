@@ -1,7 +1,7 @@
 """
 Double linked list class code
 """
-import random
+import random, timeit
 
 class LinkedList:
     """
@@ -74,8 +74,7 @@ class LinkedList:
     
         
 
-        
-def main():
+def inserting_into_list():
     bag_num = list(range(1000))
     foo = random.choice(bag_num)
     bag_num.remove(foo)
@@ -85,7 +84,12 @@ def main():
         foo = random.choice(bag_num)
         bag_num.remove(foo)
         link_list.add(foo)
+    return link_list
         
+        
+def main():
+    t = timeit.Timer('inserting_into_list()')
+    print(t.timeit())
     
     # ll = LinkedList(0)
     # for i in range(10, 210, 10):
