@@ -1,7 +1,6 @@
 """
 Double linked list class code
 """
-import random, timeit
 
 class LinkedList:
     """
@@ -9,14 +8,7 @@ class LinkedList:
     """
     head = None
     tail = None
-    def __init__(self, key):
-        if not self.__class__.head:
-            self.__class__.head = self
-        self.key = key
-        self.next = None
-        self.previous = None
-    
-    
+
     def __iter__(self):
         self.current_node = self.__class__.head
         return self
@@ -43,13 +35,21 @@ class LinkedList:
         Given a key, makes a node and appends it to tail of linked list.
         Updates tail pointer accordingly
         """
-        if not self.__class__.tail:
-            self.__class__.tail = self.__class__.head
-        node = LinkedList(key)
+        self.key, self.next = key, None
+        
+        
+        if not self.__class__.head:
+            #head and tail have not been set, hence setting them to self
+            self.previous = None
+            self.__class__.head, self.__class__.tail = self, self
+            return self
+        
+        #tail pointer needs to be updated
         prev_tail = self.__class__.tail
-        prev_tail.next = node
-        node.previous = prev_tail
-        self.__class__.tail = node
+        prev_tail.next = self
+        self.previous = prev_tail
+        self.__class__.tail = self
+        
         return self.__class__.head
         
         
@@ -59,52 +59,28 @@ class LinkedList:
         Returns the value of key
         """
         curr_node = self.__class__.head
-        found = False
+        #cannot use self.__iter__ as the node is needed, not just key
         while curr_node:
             if curr_node.key == key:
-                found = True
                 break
             curr_node = curr_node.next
-        if not found:
+        else:
             print("Key {0} not found, hence not deleted".format(key))
             return None
-        curr_node.previous.next = curr_node.next
-        curr_node.next.previous = curr_node.previous
+        
+        #depending on curr_node position, head, tail could be updated
+        prev_node = curr_node.previous
+        next_node = curr_node.next
+        #if there is no prev_node, curr_node is head
+        if not prev_node:
+            self.__class__.head = next_node
+        else:
+            prev_node.next = next_node
+        #if there is no next_node, curr_node is tail
+        if not next_node:
+            self.__class__.tail = prev_node
+        else:
+            next_node.previous = prev_node
+        
         return key
-    
-        
 
-def inserting_into_list():
-    bag_num = list(range(1000))
-    foo = random.choice(bag_num)
-    bag_num.remove(foo)
-    link_list = LinkedList(foo)
-
-    while bag_num:
-        foo = random.choice(bag_num)
-        bag_num.remove(foo)
-        link_list.add(foo)
-    return link_list
-        
-        
-def main():
-    t = timeit.Timer('inserting_into_list()')
-    print(t.timeit())
-    
-    # ll = LinkedList(0)
-    # for i in range(10, 210, 10):
-        # ll.add(i)
-        
-    # for i in ll:
-        # print(i)
-    # ll.remove(20)
-    # ll.remove(50)
-    # ll.remove(670)
-    # ll.remove(110)
-	
-    # for i in ll:
-        # print(i)    
-	
-if __name__ == '__main__':
-    main()
-    
