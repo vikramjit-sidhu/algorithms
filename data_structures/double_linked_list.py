@@ -9,6 +9,11 @@ class LinkedList:
     head = None
     tail = None
 
+    def __init__(self):
+        self.next = None
+        self.previous = None
+        self.key = None
+    
     def __iter__(self):
         self.current_node = self.__class__.head
         return self
@@ -35,20 +40,19 @@ class LinkedList:
         Given a key, makes a node and appends it to tail of linked list.
         Updates tail pointer accordingly
         """
-        self.key, self.next = key, None
-        
+        node = LinkedList()
+        node.key = key
         
         if not self.__class__.head:
             #head and tail have not been set, hence setting them to self
-            self.previous = None
-            self.__class__.head, self.__class__.tail = self, self
-            return self
+            self.__class__.head, self.__class__.tail = node, node
+            return node
         
         #tail pointer needs to be updated
         prev_tail = self.__class__.tail
-        prev_tail.next = self
-        self.previous = prev_tail
-        self.__class__.tail = self
+        prev_tail.next = node
+        node.previous = prev_tail
+        self.__class__.tail = node
         
         return self.__class__.head
         
@@ -81,6 +85,7 @@ class LinkedList:
             self.__class__.tail = prev_node
         else:
             next_node.previous = prev_node
+        del(curr_node)
         
         return key
 
