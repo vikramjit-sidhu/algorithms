@@ -7,6 +7,8 @@ My implementation of python heapq module
 class MaxHeap:
     def __init__(self, ar=[None]):
         self.A = ar
+        if len(self.A) > 1:
+            self.__create_maxheap()
 
 
     def __max_heapify(self, index):
@@ -25,14 +27,18 @@ class MaxHeap:
         return False
         
 
-    def create_maxheap(self):
+    def __create_maxheap(self):
         if self.A[0]:
             self.A.append(self.A[0])
             self.A[0] = None
         start_index = int((len(self.A)-1)/2)
         for i in range(start_index, 0, -1):
             self.__max_heapify(i)
-        
+    
+
+    def find_max(self):
+        return self.A[1]
+    
 
     def extract_max(self):
         last_index = len(self.A) - 1
@@ -77,9 +83,9 @@ class MaxHeap:
                 key_index = element
                 break
             left, right = element*2, element*2+1
-            if self.A[left] >= key:
+            if left < len(self.A) and self.A[left] >= key:
                 qu.put_nowait(left)
-            if self.A[right] >= key:
+            if right < len(self.A) and self.A[right] >= key:
                 qu.put_nowait(right)
         else:
             print("Key {0} not found".format(key))
