@@ -2,6 +2,7 @@
 # http://www.codechef.com/problems/REVERSE/
 
 from collections import namedtuple
+from queue import PriorityQueue
 
 def main():
     n, m = [int(num) for num in input().strip().split(" ")]
@@ -35,7 +36,7 @@ def dijkstra(vertices, edges, graph, start_node):
     nodes_to_visit = []
     nodes_to_visit.append(int(start_node))
 
-#starting dijkstra loop
+    #starting dijkstra loop
     for node in nodes_to_visit:
         if graph[node]:     #if node has edges
             for node_to, distance in graph[node].items():
@@ -64,6 +65,9 @@ def dijkstra(vertices, edges, graph, start_node):
 
 def create_graph(n, m):
     graph = [None] * (n+1)
+    
+    forward_nodevalue = 0
+    reverse_nodevalue = 1
 
     for z in range(m):
         efrom, eto = [int(num) for num in input().strip().split(" ")] #edge from and edge to
