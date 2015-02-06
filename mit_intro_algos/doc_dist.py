@@ -3,7 +3,6 @@ Document distance, my implementation
 """
 import sys
 
-
 def isalphanum(word):
     """
     Checks if word is alphanumeric
