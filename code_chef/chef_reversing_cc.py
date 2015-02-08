@@ -107,11 +107,12 @@ def dijkstra(vertices, edges, graph, start_node):
 
     priority_queue = MinHeap()
     priority_queue.insert_key((0, start_node))
-    for i in range(2, edges+1):
+    for i in range(2, vertices+1):
         priority_queue.insert_key((float("inf"), i))
     #node is a tuple of form (distance entry in distance table, node index in graph)
         
     #starting dijkstra loop
+    last_vertice = vertices-1
     node = priority_queue.extract_min()
     while node:
         if graph[node[1]]:     #if node has edges
@@ -121,12 +122,14 @@ def dijkstra(vertices, edges, graph, start_node):
                     priority_queue.update_key((distance_table[node_to].distance, node_to), (dist, node_to))
                     distance_table[node_to] = distance_table[node_to]._replace(distance=dist, parent=node)
         node = priority_queue.extract_min()
+        if node == last_vertice:
+            break
                 
     return distance_table
 
 
 def find_best_path(n, m, graph):
-    start_node = 1
+    start_node = 1  #start from node 1 not 0.
     distance_table = dijkstra(n, m, graph, start_node)
 
     if distance_table[n].distance != float('inf'):
