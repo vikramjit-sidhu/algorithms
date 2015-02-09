@@ -230,8 +230,6 @@ class MaxHeap:
         height_needed is the height of the subtree required to balance out the nodes
         A subtree of this height is extracted from the child having a larger height than the other
         """
-        print("in balance_node method, with main_balance_node: {}, height needed: {}".format(main_balance_node.key, height_needed))
-
         #extract subtree of height height_needed, always from subtree with greater height
         node = main_balance_node
         while node.left or node.right:
@@ -275,9 +273,9 @@ class MaxHeap:
                 continue
             
             if current_node.left.key < subtree_toinsert.key:
-                subtree_toinsert = self.__replace_nodes(node.left, subtree_toinsert)
+                subtree_toinsert = self.__replace_nodes(current_node.left, subtree_toinsert)
             elif current_node.right.key < subtree_toinsert.key:
-                subtree_toinsert = self.__replace_nodes(node.right, subtree_toinsert)
+                subtree_toinsert = self.__replace_nodes(current_node.right, subtree_toinsert)
 
             if current_node.left.height < current_node.right.height:
                 current_node = current_node.left
@@ -498,10 +496,11 @@ class MaxHeap:
             if not current_level:
                 current_level = list(next_level)
                 next_level = []
-                print()
             node = current_level.pop()
             baap = node.parent.key if node.parent else "null"
-            print("{} [parent->{}; height->{}]".format(node.key, baap, node.height), end = "   ")
+            left = node.left.key if node.left else "null"
+            right = node.right.key if node.right else "null"
+            print("key:{0} height:{1} left:{2} right:{3}  parent:{4}".format(node.key, node.height, left, right, baap))
             if node.left:
                 next_level.append(node.left)
             if node.right:
@@ -522,11 +521,8 @@ def generate_heap():
     for i in range(0, 130, 7):
         node_value += 1
         new_node = MaxHeap(i, node_value)
-        print("\n\ninserting node with key: {}".format(new_node.key))
         root = root.insert_node(root, new_node)
-        root.bfs(root)
-
-
+    
     root.bfs(root)
 
     # for i in range(0, 130, 7):
