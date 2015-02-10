@@ -49,7 +49,6 @@ class LinkedList:
         self.tail = node
         return self.head
         
-        
     def remove(self, key):
         """
         Given a key, searches for it and removes it from linked list.
