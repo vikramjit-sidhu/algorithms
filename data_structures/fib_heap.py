@@ -5,6 +5,8 @@ http://stackoverflow.com/questions/19508526/what-is-the-intuition-behind-the-fib
 http://stackoverflow.com/questions/14333314/why-is-a-fibonacci-heap-called-a-fibonacci-heap
 """
 
+import pdb
+
 class FibHeapNode:
     def __init__(self, key):
         self.key = key
@@ -120,6 +122,7 @@ class FibonacciHeap:
         Search node with BFS and update key 
         IMPORTANT: only supports decrease of key, increase not supported
         """
+        pdb.set_trace()
         if old_key < new_key:
             print("New key is greater, change not possible")
             return None
