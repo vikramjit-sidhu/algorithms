@@ -26,14 +26,17 @@ class FibHeapNode:
         self.children.append(node)
         self.degree += node.degree + 1
     
-    def remove_child(self, child_rem):
+    def remove_child(self, child_remove):
+        height_removed = 0
         for index, child in enumerate(self.children):
-            if child is child_rem:
-                self.degree -= child.degree + 1
+            if child is child_remove:
+                height_removed = child.degree + 1
+                self.degree -= height_removed
                 del self.children[index]
                 break
         else:
-            print("\nChild with key {0} not found in node with key: {1}".format(child_rem.key, self.key))
+            print("\nChild with key {0} not found in node with key: {1}".format(child_remove.key, self.key))
+        return height_removed
             
     def traversal(self):
         print(self.key, end=' ->')
@@ -53,6 +56,8 @@ class FibonacciHeap:
         """ Simply append node to roots list, leave maintenance operations for later """
         if isinstance(elt, FibHeapNode):
             node = elt
+            node.parent = None
+            node.marked = False
         else:
             elt_key = elt
             node = FibHeapNode(elt)
@@ -122,7 +127,6 @@ class FibonacciHeap:
         Search node with BFS and update key 
         IMPORTANT: only supports decrease of key, increase not supported
         """
-        pdb.set_trace()
         if old_key < new_key:
             print("New key is greater, change not possible")
             return None
@@ -152,21 +156,28 @@ class FibonacciHeap:
         If parent was already marked, the parent has to be made a separate root as well, 
         continuing until an unmarked node is found or root (done in _check_marking)
         """
-        if node.parent and node.key < node.parent.key:
+        if (node.parent is not None) and (node.key < node.parent.key):
             father = node.parent
-            father.remove_child(node)
+            ht_chd = father.remove_child(node)
             self.insert(node)
-            self._check_marking(father)
+            self._check_marking(father, ht_chd)
             
-    def _check_marking(self, node):
+    def _check_marking(self, node, ht_changed):
         """ If node has marked property set, remove it from its parent and make it a root, else mark it """
         if node.marked:
-            self._add_as_root(node)
-            if node.parent:
-                self._check_marking(node.parent)
+            father = node.parent
+            ht_changed += father.remove_child(node)
+            self.insert(node)
+            if father is not None:
+                self._check_marking(father, ht_changed)
         else:
-            node.marked = True
-            
+            if node.parent is not None:
+                #check to see if node is root, root cannot be marked
+                node.marked = True
+            while node is not None:
+                #updating height of nodes upto root
+                node.degree -= ht_changed
+                node = node.parent
     
     
 def heap_node_test():
