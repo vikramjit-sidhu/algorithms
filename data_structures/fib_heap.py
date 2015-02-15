@@ -114,8 +114,12 @@ class FibonacciHeap:
     
     def _set_min_index(self):
         """ Iterates through all roots of heap and sets pointer to one with minimum key """
-        min_val = self.roots_list[0].key if self.roots_list else 0
-        min_index = None
+        if self.roots_list:
+            min_val = self.roots_list[0].key
+            min_index = 0
+        else:
+            self.min_root_index = None
+            return
         for index, node in enumerate(self.roots_list):
             if node.key < min_val:
                 min_val = node.key
@@ -163,17 +167,22 @@ class FibonacciHeap:
             self._check_marking(father, ht_chd)
             
     def _check_marking(self, node, ht_changed):
-        """ If node has marked property set, remove it from its parent and make it a root, else mark it """
+        """ 
+        If node has marked property set, remove it from its parent and make it a root, else mark it.
+        Root can never be marked, hence no need to check to see if root
+        """
         if node.marked:
             father = node.parent
+            father.degree -= ht_changed
             ht_changed += father.remove_child(node)
             self.insert(node)
-            if father is not None:
-                self._check_marking(father, ht_changed)
+            self._check_marking(father, ht_changed)
         else:
-            if node.parent is not None:
-                #check to see if node is root, root cannot be marked
-                node.marked = True
+            if node.parent is None:
+                #check to see if node is root, root cannot be marked, hence break out
+                return
+            node.marked = True
+            node = node.parent
             while node is not None:
                 #updating height of nodes upto root
                 node.degree -= ht_changed
