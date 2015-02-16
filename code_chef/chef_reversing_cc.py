@@ -3,114 +3,204 @@
 
 from collections import namedtuple
 
-
-
-class MinHeap:
-    def __init__(self, ar=[None]):
-        self.A = ar
-        if len(self.A) > 1:
-            self.__create_minheap()
-
-
-    def __min_heapify(self, index):
-        left, right = 2*index, 2*index+1
-        if left < len(self.A) and self.A[index] > self.A[left]:
-            minimum = left
+class FibHeapNode:
+    def __init__(self, key):
+        self.key = key
+        self.children = []
+        self.parent = None
+        self.degree = 0 #no of children
+        self.marked = False #has a child node been removed
+    
+    def _update_degree(self):
+        self.degree = 0
+        for child in self.children:
+            self.degree += child.degree + 1
+    
+    def insert_child(self, node):
+        """ Inserts a child node into the object from where method is called """
+        node.parent = self
+        self.children.append(node)
+        self.degree += node.degree + 1
+    
+    def remove_child(self, child_remove):
+        height_removed = 0
+        for index, child in enumerate(self.children):
+            if child is child_remove:
+                height_removed = child.degree + 1
+                self.degree -= height_removed
+                del self.children[index]
+                break
         else:
-            minimum = index
-        if right < len(self.A) and self.A[minimum] > self.A[right]:
-            minimum = right
+            print("\nChild with key {0} not found in node with key: {1}".format(child_remove.key, self.key))
+        return height_removed
             
-        if minimum != index:
-            self.A[index], self.A[minimum] = self.A[minimum], self.A[index]
-            self.__min_heapify(minimum)
-            return True
-        return False
+    def traversal(self):
+        print(self.key, end=' ->')
+        for child in self.children:
+            print(child.key, end=' ')
+        print('\n', end=' ')
+        for child in self.children:
+            child.traversal()
         
-
-    def __create_minheap(self):
-        if self.A[0]:
-            self.A.append(self.A[0])
-            self.A[0] = None
-        start_index = int((len(self.A)-1)/2)
-        for i in range(start_index, 0, -1):
-            self.__min_heapify(i)
     
-
-    def find_min(self):
-        return self.A[1]
+class FibonacciHeap:
+    def __init__(self):
+        self.roots_list = []
+        self.min_root_index = None
+        
+    def insert(self, elt):
+        """ Simply append node to roots list, leave maintenance operations for later """
+        if isinstance(elt, FibHeapNode):
+            node = elt
+            node.parent = None
+            node.marked = False
+        else:
+            elt_key = elt
+            node = FibHeapNode(elt)
+        if self.min_root_index is None:
+            self.min_root_index = 0
+        else:
+            min_node = self.roots_list[self.min_root_index]
+            if node.key < min_node.key:
+                self.min_root_index = len(self.roots_list)
+        self.roots_list.append(node)
     
-
+    def _add_as_root(self, node):
+        """ Add a node as root, change its parent property, mark it as False, etc """
+        node.parent = None
+        node.marked = False
+        self.roots_list.append(node)
+    
     def extract_min(self):
-        last_index = len(self.A) - 1
-        if last_index < 1:
+        """ Removes min node, makes its children as roots and starts consolidate operation """
+        if self.min_root_index is None:
             return None
-        self.A[1], self.A[last_index] = self.A[last_index], self.A[1]
-        min_key = self.A.pop()
-        self.__min_heapify(1)
+        min_node = self.roots_list[self.min_root_index]
+        min_key = min_node.key
+        del self.roots_list[self.min_root_index]
+        for children in min_node.children:
+            self._add_as_root(children)
+        # del(min_node) #operation not really necessary
+        self._consolidate()
+        self._set_min_index()
         return min_key
+    
+    def _consolidate(self):
+        """ Merge all roots which have the same degree. (same number of children) """
+        node_degree_hash = {}   #hash containing, node degree:node index pairs
+        for node in self.roots_list:
+            if node.degree in node_degree_hash:
+                while node.degree in node_degree_hash:
+                    #other node, with same degree, which has to be merged
+                    merge_node = node_degree_hash[node.degree]
+                    #deleting this degree entry from node_degree_hash as we are merging them
+                    del node_degree_hash[node.degree]
+                    node = self._merge(node, merge_node)
+            node_degree_hash[node.degree] = node
+        #update roots_list with new roots
+        self.roots_list = list(node_degree_hash.values())
+
+    def _merge(self, node1, node2):
+        """ node with smaller key becomes a child of other node """
+        if node1.key < node2.key:
+            node1.insert_child(node2)
+            return node1
+        node2.insert_child(node1)
+        return node2
+    
+    def _set_min_index(self):
+        """ Iterates through all roots of heap and sets pointer to one with minimum key """
+        if self.roots_list:
+            min_val = self.roots_list[0].key
+            min_index = 0
+        else:
+            self.min_root_index = None
+            return
+        for index, node in enumerate(self.roots_list):
+            if node.key < min_val:
+                min_val = node.key
+                min_index = index
+        self.min_root_index = min_index
         
-
-    def insert_key(self, key):
-        self.A.append(key)
-        check_index = len(self.A) - 1
-        parent_index = int(check_index/2)
-        self.__parent_updatify(parent_index, check_index)
-        
-
-    def __parent_updatify(self, parent_index, check_index):
-        while parent_index >=1 and self.A[parent_index] > self.A[check_index]:
-            self.A[parent_index], self.A[check_index] = self.A[check_index], self.A[parent_index]
-            check_index, parent_index = parent_index, int(parent_index/2)
-
-
-    def update_key(self, key, new_key):
-        key_index = self.find_key(key)
-        self.A[key_index] = new_key
-        if not self.__min_heapify(key_index):
-            self.__parent_updatify(int(key_index/2), key_index)
-        
-            
-    def find_key(self, key):
+    def update_key(self, old_key, new_key):
+        """ 
+        Search node with BFS and update key 
+        IMPORTANT: only supports decrease of key, increase not supported
         """
-        Returns index of key in array (self.A). Uses BFS.
-        """
+        if old_key < new_key:
+            print("New key is greater, change not possible")
+            return None
         from queue import Queue
         qu = Queue()
-        qu.put(1)
-        key_index = None
-
+        for root in self.roots_list:
+            if root.key <= old_key:
+                qu.put_nowait(root)
         while not qu.empty():
-            element = qu.get_nowait()
-            if self.A[element] == key:
-                key_index = element
+            node = qu.get_nowait()
+            if node.key == old_key:
+                node.key = new_key
+                self._maintain_heap(node)
                 break
-            left, right = element*2, element*2+1
-            if left < len(self.A) and self.A[left] <= key:
-                qu.put_nowait(left)
-            if right < len(self.A) and self.A[right] <= key:
-                qu.put_nowait(right)
+            #accessing children of node to put into queue
+            for child in node.children:
+                if child.key <= old_key:
+                    qu.put_nowait(child)
         else:
-            print("Key {0} not found".format(key))
-        
+            #key not found, hence else is executed
+            print("\nKey: {0} not found in heap, hence not updated".format(old_key))
         del(qu)
-        return key_index
-
+        
+    def _maintain_heap(self, node):
+        """ 
+        Checks if node.key < parent.key if so branches it off and makes it a separate root, marking its parent (done in this method)
+        If parent was already marked, the parent has to be made a separate root as well, 
+        continuing until an unmarked node is found or root (done in _check_marking)
+        """
+        if (node.parent is not None) and (node.key < node.parent.key):
+            father = node.parent
+            ht_chd = father.remove_child(node)
+            self.insert(node)
+            self._check_marking(father, ht_chd)
+        elif node.parent is None:
+            min_key = self.roots_list[self.min_root_index].key
+            if min_key > node.key:
+                self.min_root_index = self.roots_list.index(node)
+            
+    def _check_marking(self, node, ht_changed):
+        """ 
+        If node has marked property set, remove it from its parent and make it a root, else mark it.
+        Root can never be marked, hence no need to check to see if root
+        """
+        if node.marked:
+            father = node.parent
+            father.degree -= ht_changed
+            ht_changed += father.remove_child(node)
+            self.insert(node)
+            self._check_marking(father, ht_changed)
+        else:
+            if node.parent is None:
+                #check to see if node is root, root cannot be marked, hence break out
+                return
+            node.marked = True
+            node = node.parent
+            while node is not None:
+                #updating height of nodes upto root
+                node.degree -= ht_changed
+                node = node.parent
 
 
 
 def dijkstra(vertices, edges, graph, start_node):
     DistanceTableEntry = namedtuple ('DistanceTableEntry', 'distance, parent')
     distance_table = [DistanceTableEntry(float('inf'), -2)] * (vertices+1)
-
+    #distance table contains entries needed
     distance_table[int(start_node)] = distance_table[int(start_node)]._replace(distance=0, parent=-1)
-
-    priority_queue = MinHeap()
-    priority_queue.insert_key((0, start_node))
+    #initializing priority queue
+    priority_queue = FibonacciHeap()
+    priority_queue.insert((0, start_node))
     for i in range(2, vertices+1):
-        priority_queue.insert_key((float("inf"), i))
+        priority_queue.insert((float("inf"), i))
     #node is a tuple of form (distance entry in distance table, node index in graph)
-        
     #starting dijkstra loop
     last_vertice = vertices-1
     node = priority_queue.extract_min()
@@ -122,22 +212,16 @@ def dijkstra(vertices, edges, graph, start_node):
                     priority_queue.update_key((distance_table[node_to].distance, node_to), (dist, node_to))
                     distance_table[node_to] = distance_table[node_to]._replace(distance=dist, parent=node)
         node = priority_queue.extract_min()
-        if node == last_vertice:
-            break
-                
     return distance_table
-
 
 def find_best_path(n, m, graph):
     start_node = 1  #start from node 1 not 0.
     distance_table = dijkstra(n, m, graph, start_node)
-
     if distance_table[n].distance != float('inf'):
         no_reverses = int(distance_table[n].distance)
     else:
         no_reverses = -1
     return no_reverses
-
 
 def create_graph(n, m):
     """
@@ -147,10 +231,8 @@ def create_graph(n, m):
     graph = [None] * (n+1)
     for_edge = 0
     rev_edge = 1
-    
     for z in range(m):
         efrom, eto = [int(num) for num in input().strip().split(" ")] #edge from and edge to
-
         if efrom == eto:
             continue
         elif graph[efrom]:
@@ -159,7 +241,6 @@ def create_graph(n, m):
                 continue
             elif (eto in graph[efrom]) and (graph[efrom][eto] == for_edge):
                 continue
-        
         if not graph[efrom]:
             graph[efrom] = {}
         graph[efrom][eto] = for_edge
@@ -167,16 +248,14 @@ def create_graph(n, m):
         if not graph[eto]:
             graph[eto] = {}
         graph[eto][efrom] = rev_edge
-
     return graph
 
     
 def main():
     n, m = [int(num) for num in input().strip().split(" ")]
     graph = create_graph(n, m)
-
-    print(find_best_path(n, m, graph))
-    
+    no_reverses = find_best_path(n, m, graph)
+    print(no_reverses)
 
 if __name__ == '__main__':
     main()
