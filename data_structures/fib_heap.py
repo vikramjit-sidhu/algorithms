@@ -165,6 +165,10 @@ class FibonacciHeap:
             ht_chd = father.remove_child(node)
             self.insert(node)
             self._check_marking(father, ht_chd)
+        elif node.parent is None:
+            min_key = self.roots_list[self.min_root_index].key
+            if min_key > node.key:
+                self.min_root_index = self.roots_list.index(node)
             
     def _check_marking(self, node, ht_changed):
         """ 
@@ -187,33 +191,3 @@ class FibonacciHeap:
                 #updating height of nodes upto root
                 node.degree -= ht_changed
                 node = node.parent
-    
-    
-def heap_node_test():
-    node_main = FibHeapNode(8)
-    for i in range(10):
-        node = FibHeapNode(i*10)
-        node_main.insert_child(node)
-    print("degree: {0}".format(node_main.degree))
-    for node in node_main.children:
-        print(node.key)
-        
-def fib_heap_test():
-    hp = FibonacciHeap()
-    for i in range(20):
-        hp.insert(i)
-    print("\n\nmin root index: {0} min root key(should be 0): {1}".format(hp.min_root_index, hp.roots_list[hp.min_root_index].key))
-    min_node = hp.roots_list[hp.min_root_index]
-    for i in range(-2, 10, 3):
-        min_node.insert_child(FibHeapNode(i))
-    print("extracted min node: {0}".format(hp.extract_min()))
-    print("min root index: {0} min root key(should be -2): {1}".format(hp.min_root_index, hp.roots_list[hp.min_root_index].key))
-    
-def main():
-    heap_node_test()
-    fib_heap_test()
-        
-if __name__ == '__main__':
-    main()
-    
-    
