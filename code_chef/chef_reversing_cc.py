@@ -191,6 +191,12 @@ class FibonacciHeap:
 
 
 def dijkstra(vertices, edges, graph, start_node):
+    """
+    Implements distance table using a namedtuple and list.
+    distance_table is a list, DistanceTableEntry is a named tuple.
+    distance_table[1] = (parent=' ', distance=' ')
+    not very performance intensive
+    """
     DistanceTableEntry = namedtuple ('DistanceTableEntry', 'distance, parent')
     distance_table = [DistanceTableEntry(float('inf'), -2)] * (vertices+1)
     #distance table contains entries needed
@@ -213,12 +219,39 @@ def dijkstra(vertices, edges, graph, start_node):
                     distance_table[node_to] = distance_table[node_to]._replace(distance=dist, parent=node)
         node = priority_queue.extract_min()
     return distance_table
+    
+def dijkstra_noparent(vertices, edges, graph, start_node):
+    """
+    Uses a hash table for distance_table, contains only node, distance pairs (not parent)
+    """
+    distance_table = {}
+    #distance table contains entries needed
+    #distance table is simply node key, distance to node so far
+    distance_table[int(start_node)] = 0
+    #initializing priority queue
+    priority_queue = FibonacciHeap()
+    priority_queue.insert((0, start_node))
+    for i in range(2, vertices+1):
+        distance_table[i] = float("inf")
+        priority_queue.insert((float("inf"), i))
+    #starting dijkstra loop
+    node = priority_queue.extract_min()
+    while node is not None:
+        #node is a tuple of form (priority, node key)
+        if graph[node[1]] is not None:     #if node has edges
+            for node_to, distance in graph[node[1]].items():
+                dist = distance + distance_table[node[1]]
+                if distance_table[node_to] > dist:
+                    priority_queue.update_key((distance_table[node_to], node_to), (dist, node_to))
+                    distance_table[node_to] = dist
+        node = priority_queue.extract_min()
+    return distance_table
 
 def find_best_path(n, m, graph):
     start_node = 1  #start from node 1 not 0.
-    distance_table = dijkstra(n, m, graph, start_node)
-    if distance_table[n].distance != float('inf'):
-        no_reverses = int(distance_table[n].distance)
+    distance_table = dijkstra_noparent(n, m, graph, start_node)
+    if distance_table[n] != float('inf'):
+        no_reverses = int(distance_table[n])
     else:
         no_reverses = -1
     return no_reverses
