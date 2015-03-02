@@ -7,8 +7,6 @@ unfairness = max(x1, x2, ... xk) - min(x1, x2, ... xk)
 
 def min_unfairness(num_list, k):
     nums_sorted = sorted(num_list)
-    if k <= 1:
-        return nums_sorted[0]
     # assert(k>1) #this is precondition for loop
     min_unfairness = float('inf')   #min unfairness seen so far
     unf_list = []    #list of unfairness, keeps track of the 'k' unfairness integers seen so far.
@@ -21,14 +19,18 @@ def min_unfairness(num_list, k):
             if min_unfairness > unf_list[0]:
                 min_unfairness = unf_list[0]
             del(unf_list[0])
-        elif k == 1:
+        elif k_counter == 1:
             prev_elt = num
             continue
-        delta = prev_elt - num
+        delta = num - prev_elt
         unf_list = [i + delta for i in unf_list]
         unf_list.append(delta)
         prev_elt = num
-    return min_unfairness
+    #handling edge case of last elements having min unfairness
+    if min_unfairness > unf_list[0]:
+        return unf_list[0]
+    else:
+        return min_unfairness
         
 def main():
     n = int(input().strip())
