@@ -11,14 +11,13 @@ def find_max_skillset(n, person_skills):
     len_list = len(person_skills)
     for i in range(len_list):
         for j in range(i+1, len_list):
-            or_op = person_skills[i] | person_skills[j]
+            or_op = bin(person_skills[i] | person_skills[j]).count('1')
             if or_op > max_or:
                 count_max_or = 1
                 max_or = or_op
             elif or_op == max_or:
                 count_max_or += 1
-    no_common_skills = bin(max_or).count('1')    #count the max no of topics a pair can know
-    return (no_common_skills, count_max_or)
+    return (max_or, count_max_or)
     
 def main():
     n, m = (int(i) for i in input().strip().split(' '))
