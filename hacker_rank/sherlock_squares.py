@@ -21,29 +21,14 @@ def check_square(n):
         return number_status[n]
     last_digit = n % 10
     last_two_digits = n % 100
-    if (last_digit in [1, 4, 6, 9]) or (last_two_digits in [0, 25]):
-        if last_digit in [1, 9]:
-            new_n = n // 10
-            if (new_n % 4) != 0:
-                number_status[n] = False
-                return False
-        elif last_digit == 4:
-            second_last_digit = (n // 10) % 10
-            if (second_last_digit % 2) != 0:
-                number_status[n] = False
-                return False
-        elif last_digit == 6:
-            second_last_digit = (n // 10) % 10
-            if (second_last_digit % 2) == 0:
-                number_status[n] = False
-                return False
-        root = sqrt(n)
-        if root.is_integer():
+    if (last_digit in (1, 4, 6, 9)) or (last_two_digits in (0, 25)):
+        root = int(sqrt(n) + 0.5)
+        if pow(root, 2) == n:
             number_status[n] = True
             return True
     number_status[n] = False
     return False
-    
+
 def count_squares(a, b):
     count_sq = 0
     for num in range(a, b+1):
