@@ -1,5 +1,5 @@
 """
-Hacker Rank - Service Lane
+Hacker Rank - Gem Stones
 https://www.hackerrank.com/challenges/service-lane
 """
 
