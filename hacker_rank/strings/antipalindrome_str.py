@@ -32,14 +32,35 @@ def down_rabbit_hole(node, char_set, max_level):
             node.children[char] = new_node
             anti_palin += down_rabbit_hole(new_node, char_set, max_level)
     return anti_palin
+
+def build_trie(root, char_set, max_level):
+    curr_level, next_level = [root], []
+    anti_palin = 0
+    while len(curr_level) > 0:
+        for node in curr_level:
+            if node.level == max_level:
+                anti_palin += 1
+                continue
+            for char in char_set:
+                if node.char != char and node.prev_char != char:
+                    new_node = TrieNode()
+                    new_node.level = node.level + 1
+                    new_node.char = char
+                    new_node.prev_char = node.char
+                    new_node.word = node.word + str(char)
+                    node.children[char] = new_node
+                    next_level.append(new_node)
+        curr_level, next_level = next_level, []
+    return anti_palin
     
 def count_antipalindromes(m, n):
-    num = pow(10,9) + 7
-    set_recursion_depth(n)
+    # num = pow(10,9) + 7
     character_set = list(range(1, m+1))
     root = TrieNode()
+    set_recursion_depth(n)
     num_anti_palins = down_rabbit_hole(root, character_set, n)
-    return (num_anti_palins % num)
+    # num_anti_palins = build_trie(root, character_set, n)
+    return (num_anti_palins)
 
 def main():
     num_cases = int(input().strip())
