@@ -1,6 +1,11 @@
 """
 Hacker Rank - Sherlock and Anagrams
 https://www.hackerrank.com/challenges/sherlock-and-anagrams
+
+NOTE: Algo abandoned in favour of brute force sherlock anagram algo.
+This algo is slower but still can be corrected:
+when counting the nodes, use the frequency of the substring as well
+for example we have ab:2 and ba:1 this will give 3 matches not 2 {ab, ba}, {ab, ab}, {ab, ba}. this is not counted in the current algo.
 """
 
 import copy
@@ -56,7 +61,7 @@ def factorial(num):
     return fact
     
 def calculate_combinations(num):
-    """ Given a substring occurring num times, we find the ways it can be extracted 2 at a time. """
+    """ Given a substring occurring num times, we find the ways it can be extracted 2 at a time, i.e calculating C(num, 2) """
     return (factorial(num)//(2*factorial(num-2)))
     
 def count_anagramic_substrings(word):
@@ -69,17 +74,14 @@ def count_anagramic_substrings(word):
     #populating level 0
     curr_level.extend(list(root.children.values()))
     while len(curr_level) > 0:
-        # print('\nlevel up, num_anagrams: ', num_anagrams)
         for index, node in enumerate(curr_level):
-            # print("{}: {}".format(node.word, node.count))
             next_level.extend(list(node.children.values()))
             if node.count >= 2:
                 num_anagrams += calculate_combinations(node.count)
             #compare node with all the other nodes
             for node2 in curr_level[index+1:]:
                 if node2.char_freq == node.char_freq:
-                    # print(' matched: ', node.word, node2.word)
-                    num_anagrams += 1
+                    num_anagrams += calculate_combinations(node.count + node2.count)
         curr_level, next_level = next_level, []
     return num_anagrams
 
