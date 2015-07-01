@@ -2,13 +2,12 @@
 Hacker Rank - Connected Cells
 https://www.hackerrank.com/challenges/connected-cell-in-a-grid
 """
-import pdb
 
 def find_connections(rows, cols, matrix):
     graph, nodes_tovisit = create_graph(rows, cols, matrix)
     nodes_visited = {}
-    for nd,it in graph.items():
-        print('{0}: {1}'.format(nd, it))
+    # for nd,it in graph.items():
+        # print('{0}: {1}'.format(nd, it))
     longest_len = 0
     for row, col in nodes_tovisit:
         if (row,col) not in nodes_visited:
@@ -35,11 +34,13 @@ def create_graph(rows, cols, matrix):
         row.append(0)
     new_row = [0] * (cols+2)
     matrix.append(new_row)
+    matrix.insert(0,new_row)
+    # for row in matrix:
+        # print(row)
     graph = {}
     nodes_tovisit = []
-    for i in range(rows):
-        for col_gr in range(1, cols+1):
-            j = col_gr-1
+    for i in range(1, rows+1):
+        for j in range(1, cols+1):
             if matrix[i][j] == 1:
                 nodes_tovisit.append((i,j))
                 if (i,j) not in graph:
@@ -62,12 +63,12 @@ def create_graph(rows, cols, matrix):
                         graph[(i+1,j+1)].append((i,j))
                     else:
                         graph[(i+1,j+1)] = [(i,j)]
-                if matrix[i-1][j-1] == 1:
-                    graph[(i,j)].append((i-1,j-1))
-                    if (i-1,j-1) in graph:
-                        graph[(i-1,j-1)].append((i,j))
+                if matrix[i+1][j-1] == 1:
+                    graph[(i,j)].append((i+1,j-1))
+                    if (i+1,j-1) in graph:
+                        graph[(i+1,j-1)].append((i,j))
                     else:
-                        graph[(i-1,j-1)] = [(i,j)]
+                        graph[(i+1,j-1)] = [(i,j)]
     return graph, nodes_tovisit           
     
 def main():
