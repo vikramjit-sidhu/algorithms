@@ -2,7 +2,6 @@
 Hacker Rank - Cut the tree
 https://www.hackerrank.com/challenges/cut-the-tree
 """
-import pdb
 
 class TreeNode:
     def __init__(self, val=0):
@@ -28,20 +27,14 @@ def find_edge_remove(num_nodes, root):
     populate_total_height(root)
     min_diff = float('inf')
     total_height = root.tot_value
-    max_child, max_subtr_val = None, 0
-    curr_node = root
-    while curr_node is not None:
-        if not curr_node.children:
-            break
+    nodes_tovisit = [root]
+    for curr_node in nodes_tovisit:
         for child in curr_node.children:
-            if child.tot_value > max_subtr_val:
-                max_child, max_subtr_val = child, child.tot_value
             other_subtr = total_height - child.tot_value
             diff = abs(child.tot_value - other_subtr)
             if diff < min_diff:
                 min_diff = diff
-        curr_node = max_child
-        max_child, max_subtr_val = None, 0
+            nodes_tovisit.append(child)
     return min_diff
 
 def main():
