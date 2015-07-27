@@ -23,7 +23,7 @@ $ diff -B --strip-trailing-cr generated_output correct_output
 
 # include <stdio.h>
 
-/**	Checks if char1 is the EOF special character
+/**	Checks if char1 is the EOF special character, EOF is an integer value
 *	Return value 0-False; 1-True
 */
 int charIsEOF(char char1) {
@@ -50,18 +50,18 @@ int charIsEOF(char char1) {
 int countAsciiCharsInLine() {
 	int nonAsciiChars = 0;
 	/* The current character of the line which is being processed */
-	char currentCharInLine;
+	int currentCharInLine;
 	while (1) {
-		scanf("%c", &currentCharInLine);
+		scanf("%d", &currentCharInLine);
 		/* Checking if this character is the EOF, returning to the calling function in that case */
 		if (charIsEOF(currentCharInLine) == 1) {
 			return -1;
 		}
 		/* The end of a line is denoted by \n */
-		if (currentCharInLine == '\n') {
+		if ((char) 	currentCharInLine == '\n') {
 			break;
 		}
-		printf("%c", currentCharInLine);
+		printf("%d ", currentCharInLine);
 	}
 	return nonAsciiChars;
 }
