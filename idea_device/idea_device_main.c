@@ -23,15 +23,24 @@ $ diff -B --strip-trailing-cr generated_output correct_output
 
 # include <stdio.h>
 
-int main() {
-	int nonAsciiChars;
-	nonAsciiChars = countAsciiCharsInLine();
-	printf("%d", nonAsciiChars);
-	
-	
-	return 0;	//Successful completion of program
+/**	Checks if char1 is the EOF special character
+*	Return value 0-False; 1-True
+*/
+int charIsEOF(char char1) {
+	if (char1 == EOF) {
+		return 1;
+	}
+	return 0;
 }
 
+/**	Checks if the char passed as an argument (@param charToCheck) is an ASCII character
+*	@param returnValue This method return 0 if charToCheck is NOT and ASCII character, 1 is returned if it IS and ASCII char
+*/
+// int isAsciiChar(char charToCheck) {
+	// int returnValue = 0, asciiValueOfChar;
+	// asciiValueOfChar = int (charToCheck);
+	// if asciiValueOfChar 
+// }
 
 /**	Counts the number of non-ASCII characters in a line
 *	Reads a line of text character by character until a new line (\n) delimitor is found
@@ -42,25 +51,32 @@ int countAsciiCharsInLine() {
 	int nonAsciiChars = 0;
 	/* The current character of the line which is being processed */
 	char currentCharInLine;
-	while (true) {
+	while (1) {
 		scanf("%c", &currentCharInLine);
+		/* Checking if this character is the EOF, returning to the calling function in that case */
+		if (charIsEOF(currentCharInLine) == 1) {
+			return -1;
+		}
 		/* The end of a line is denoted by \n */
-		if (currentCharInLine == "\n") {
+		if (currentCharInLine == '\n') {
 			break;
 		}
 		printf("%c", currentCharInLine);
 	}
+	return nonAsciiChars;
 }
 
 
-/**	Checks if the char passed as an argument (@param charToCheck) is an ASCII character
-*	@param returnValue This method return 0 if charToCheck is NOT and ASCII character, 1 is returned if it IS and ASCII char
-*/
-int isAsciiChar(char charToCheck) {
-	int returnValue = 0, asciiValueOfChar;
-	asciiValueOfChar = int (charToCheck);
-	if asciiValueOfChar 
+int main() {
+	int nonAsciiChars;
+	while (1) {
+		nonAsciiChars = countAsciiCharsInLine();
+		/* Check if EOF is reached, return value from function is -1 in that case and program exits */
+		if (nonAsciiChars < 0) {
+			break;
+		}
+		// printf("\n%d", nonAsciiChars);
+	}
+	
+	return 0;	//Successful completion of program
 }
-
-
-
