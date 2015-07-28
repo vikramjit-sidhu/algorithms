@@ -23,13 +23,18 @@ $ diff -B --strip-trailing-cr generated_output correct_output
 
 # include <stdio.h>
 
-/**	Checks if char1 is the EOF special character, EOF is an integer value
+/**	Checks if EOF has been reached.
+*	Takes char from stdin, checks if it is EOF, if so returns appropriate value;
+*	if not, puts that char back to stdin and returns control to calling function
 *	Return value 0-False; 1-True
 */
-int charIsEOF(char char1) {
-	if (char1 == EOF) {
+int checkEOFReached() {
+	int ch;
+	ch = getchar();
+	if (ch == EOF) {
 		return 1;
 	}
+	putchar(ch);
 	return 0;
 }
 

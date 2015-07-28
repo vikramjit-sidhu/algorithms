@@ -1,37 +1,63 @@
-
 # include <stdio.h>
+# include <stdlib.h>
 
-void printBinaryOfChar(char ch) {
+void printBinaryOfChar(char c) {
 	int i;
-	for (i = 0; i < 8; i++) {
-		printf("%d", !!((ch << i) & 0x80));
+	for (i = 7; i >= 0; --i) {
+		putchar( (c & (1 << i)) ? '1' : '0' );
 	}
 	printf("\n");
 }
 
-void printBinaryOfChar2(char c) {
-	for (int i = 7; i >= 0; --i) {
+void printBinaryOfLong(long c) {
+	int i;
+	for (i = 31; i >= 0; --i) {
 		putchar( (c & (1 << i)) ? '1' : '0' );
 	}
 	putchar('\n');
 }
 
 
-int main() {
+void printWholeLine() {
 	int c;
-	char ch;
 	while (1) {
-		c = getchar();
+		scanf("%d", &c);
 		if (c == EOF) {
 			break;
 		}
-		putchar(c);
-		scanf("%c", &ch);
-		printf("%c->", ch);
-		// if (ch == '\n') {
-		// 	printf("\n");
-		// 	continue;
-		// }
-		printBinaryOfChar2(ch);
+		printf("%c", (char) c);
 	}
+}
+
+
+/**
+	len contains the number of bytes allocated
+*/
+void readLineGetLine() {
+	char *line = NULL;
+	size_t len=0;
+	size_t len_ret = getline(&line, &len, stdin);
+	// printf("%s", line);
+	printf("\nlen: %d\nreturned: %d\n", len, len_ret);
+	int i=0;
+	while (line[i] != '\t') {
+		printBinaryOfChar(line[i]);
+		i++;
+	}
+}
+
+
+int main() {
+	long c;
+	readLineGetLine();
+	// while (1) {
+		// c = getc(stdin);
+		// if (c == EOF) {
+			// break;
+		// }
+		// putc(c, stdout);
+	// }
+	// char str[30];
+	// scanf("%s", str);
+	// printf("%s", str);
 }
