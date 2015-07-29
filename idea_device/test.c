@@ -42,6 +42,16 @@ int countNumBytesInUtf8Char(char *first_byte_in_binary) {
 	return num_bytes;
 }
 
+void pointerRevision(char *str) {
+	char *freeing = str;
+	freeing++;
+	// free(str);
+	while (*free != NULL) {
+		printf("%c", *freeing);
+		freeing++;
+	}
+}
+
 // int main() {
 // 	char *str = "111100000";
 // 	printf("%d", countNumBytesInUtf8Char(str));
@@ -58,19 +68,27 @@ int countNumBytesInUtf8Char(char *first_byte_in_binary) {
 // }
 
 
+// int main() {
+// 	while (1) {
+// 		size_t chars_read;
+// 		char *line = readLineGetLine(&chars_read);
+// 		if (chars_read == -1) {
+// 			break;
+// 		}
+// 		int i=0;
+// 		while (line[i] != NULL) {
+// 			printf("\nindex:%d %s", i, getBinaryOfChar(line[i]));
+// 			i++;
+// 		}
+// 		free(line);
+// 		printf("\n%s\n\n", line);
+// 	}
+// }
+
 int main() {
-	while (1) {
-		size_t chars_read;
-		char *line = readLineGetLine(&chars_read);
-		if (chars_read == -1) {
-			break;
-		}
-		int i=0;
-		while (line[i] != NULL) {
-			printf("\nindex:%d %s", i, getBinaryOfChar(line[i]));
-			i++;
-		}
-		free(line);
-		printf("\n%s\n\n", line);
-	}
+	size_t chars_read;
+	char *str = readLineGetLine(chars_read);
+	pointerRevision(str);
+
+	return 0;
 }

@@ -99,10 +99,10 @@ int main() {
 				free(binary_of_char);
 				continue;
 			}
+			free(binary_of_char);
 			i++;
 		}
 		printf("%d\n", count_non_ascii_chars);	//Outputting num of non-ascii chars
-		free(line);
 	}
 	
 	return 0;	//Successful completion of program
