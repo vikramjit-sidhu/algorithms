@@ -22,65 +22,87 @@ $ diff -B --strip-trailing-cr generated_output correct_output
 */
 
 # include <stdio.h>
+# include <stdlib.h>
 
-/**	Checks if EOF has been reached.
-*	Takes char from stdin, checks if it is EOF, if so returns appropriate value;
-*	if not, puts that char back to stdin and returns control to calling function
-*	Return value 0-False; 1-True
+# define NUM_BITS_IN_BYTE 8
+
+/**	Reads a line from stdin and returns it to calling function in line variable
+*	End of a line is denoted by NULL variable
+*	The getline function returns -1 if EOF is reached, or it returns number of chars read
+*	setting this value to pointer chars_read_pointer, which is then used by calling function to check for EOF
 */
-int checkEOFReached() {
-	int ch;
-	ch = getchar();
-	if (ch == EOF) {
+char *readLine(size_t *chars_read_pointer) {
+	char *line = NULL;
+	size_t space_allocated = 0;
+	*chars_read_pointer = getline(&line, &space_allocated, stdin);
+	return line;
+}
+
+/**	Given a char c, return its binary representation.
+*	char data type in C is of 8 bits or 1 byte.
+*/
+char *getBinaryOfChar(char c) {
+	int i, j;
+	char *binary_repr = (char *) malloc(NUM_BITS_IN_BYTE * sizeof(char));
+	for (i = 7, j = 0; i >= 0; --i, j++) {
+		binary_repr[j] = (c & (1 << i)) ? '1' : '0';
+	}
+	return binary_repr;
+}
+
+/**	Given binary representation of char, returns 1 if it is a Non-ASCII char, 0 otherwise
+*	ASCII chars are represented in 8 bits, and have first bit 0 :  0xxxxxxx
+*	All other non-ASCII, UTF-8 characters have the first bit set to 1
+*/
+int isNonAsciiChar(char *char_in_binary) {
+	if (char_in_binary[0] == '1') {
 		return 1;
 	}
-	putchar(ch);
 	return 0;
 }
 
-/**	Checks if the char passed as an argument (@param charToCheck) is an ASCII character
-*	@param returnValue This method return 0 if charToCheck is NOT and ASCII character, 1 is returned if it IS and ASCII char
+/**	Given binary representation of first byte of a UTF-8 char, returns total bytes for utf-8 char.
+*	All utf-8 encoded characters contain the total number of bytes encoded in the first byte
+*	eg. if there are 2 bytes in encoding, it will be of form: 110xxxxx 10xxxxxx
+*	For more details refer: https://en.wikipedia.org/wiki/UTF-8#Description
 */
-// int isAsciiChar(char charToCheck) {
-	// int returnValue = 0, asciiValueOfChar;
-	// asciiValueOfChar = int (charToCheck);
-	// if asciiValueOfChar 
-// }
-
-/**	Counts the number of non-ASCII characters in a line
-*	Reads a line of text character by character until a new line (\n) delimitor is found
-*	As each character is read, a method is called to check if it is an ASCII character, if not, a count is incremented
-*	@param nonAsciiChars contains the number of non-ASCII characters in the line, this variable is returned from this method
-*/
-int countAsciiCharsInLine() {
-	int nonAsciiChars = 0;
-	/* The current character of the line which is being processed */
-	int currentCharInLine;
-	while (1) {
-		scanf("%d", &currentCharInLine);
-		/* Checking if this character is the EOF, returning to the calling function in that case */
-		if (charIsEOF(currentCharInLine) == 1) {
-			return -1;
-		}
-		/* The end of a line is denoted by \n */
-		if ((char) 	currentCharInLine == '\n') {
-			break;
-		}
-		printf("%d ", currentCharInLine);
+int countNumBytesInUtf8Char(char *first_byte_in_binary) {
+	int num_bytes = 0, index = 0;
+	while (first_byte_in_binary[index] != '0') {
+		num_bytes++;
+		index++;
 	}
-	return nonAsciiChars;
+	return num_bytes;
 }
 
 
 int main() {
-	int nonAsciiChars;
 	while (1) {
-		nonAsciiChars = countAsciiCharsInLine();
-		/* Check if EOF is reached, return value from function is -1 in that case and program exits */
-		if (nonAsciiChars < 0) {
+		size_t chars_read_in_line = 0;
+		/* Passing pointer to get no of chars read in var, it will be -1 if EOF reached	*/
+		char *line = readLine(&chars_read_in_line);
+		if (chars_read_in_line == -1) {
 			break;
 		}
-		// printf("\n%d", nonAsciiChars);
+		int i = 0;	//Index variable for iterating chars in line
+		int count_non_ascii_chars = 0;
+		/* The line returned by getLine(..) function is NULL terminated, 
+		it also has \n before NULL, but since \n is an ASCII char, it does not affect program output */
+		while (line[i] != NULL) {
+			char *binary_of_char = getBinaryOfChar(line[i]);
+			if (isNonAsciiChar(binary_of_char) == 1) {
+				/* Incrementing count of non-ASCII chars */
+				count_non_ascii_chars++;
+				int num_bytes_in_utf8_char = countNumBytesInUtf8Char(binary_of_char);
+				/* Advancing the index ahead by the number of bytes that the current utf-8 char is represented in */
+				i += num_bytes_in_utf8_char;
+				free(binary_of_char);
+				continue;
+			}
+			free(binary_of_char);
+			i++;
+		}
+		printf("%d\n", count_non_ascii_chars);	//Outputting num of non-ascii chars
 	}
 	
 	return 0;	//Successful completion of program

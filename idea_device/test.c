@@ -9,55 +9,86 @@ void printBinaryOfChar(char c) {
 	printf("\n");
 }
 
-void printBinaryOfLong(long c) {
-	int i;
-	for (i = 31; i >= 0; --i) {
-		putchar( (c & (1 << i)) ? '1' : '0' );
+
+char *getBinaryOfChar(char c) {
+	int i, j;
+	char *binary_repr = (char *) malloc(8*sizeof(char));
+	for (i = 7, j = 0; i >= 0; --i, j++) {
+		binary_repr[j] = (c & (1 << i)) ? '1' : '0';
 	}
-	putchar('\n');
+	return binary_repr;
 }
-
-
-void printWholeLine() {
-	int c;
-	while (1) {
-		scanf("%d", &c);
-		if (c == EOF) {
-			break;
-		}
-		printf("%c", (char) c);
-	}
-}
-
 
 /**
-	len contains the number of bytes allocated
+	len contains the number of bytes allocated dynamically to line
+	return value of getline will be -1 if EOF is reached
 */
-void readLineGetLine() {
+char *readLineGetLine(size_t *chars_read_pointer) {
 	char *line = NULL;
-	size_t len=0;
-	size_t len_ret = getline(&line, &len, stdin);
+	size_t space_allocated = 0;
+	*chars_read_pointer = getline(&line, &space_allocated, stdin);
+	// printf("\nlen: %d\nreturned: %d\n", len_pointer, len_ret);
 	// printf("%s", line);
-	printf("\nlen: %d\nreturned: %d\n", len, len_ret);
-	int i=0;
-	while (line[i] != '\t') {
-		printBinaryOfChar(line[i]);
-		i++;
-	}
+	return line;
 }
 
 
+int countNumBytesInUtf8Char(char *first_byte_in_binary) {
+	int num_bytes = 0, index = 0;
+	while (first_byte_in_binary[index] != '0') {
+		num_bytes++;
+		index++;
+	}
+	return num_bytes;
+}
+
+void pointerRevision(char *str) {
+	char *freeing = str;
+	freeing++;
+	// free(str);
+	while (*free != NULL) {
+		printf("%c", *freeing);
+		freeing++;
+	}
+}
+
+// int main() {
+// 	char *str = "111100000";
+// 	printf("%d", countNumBytesInUtf8Char(str));
+// 	return 0;
+// }
+
+
+// int main() {
+// 	char *binary = getBinaryOfChar('a');
+// 	printf("%s\n", binary);
+// 	binary = getBinaryOfChar('K');
+// 	printf("%s\n", binary);
+// 	return 0;
+// }
+
+
+// int main() {
+// 	while (1) {
+// 		size_t chars_read;
+// 		char *line = readLineGetLine(&chars_read);
+// 		if (chars_read == -1) {
+// 			break;
+// 		}
+// 		int i=0;
+// 		while (line[i] != NULL) {
+// 			printf("\nindex:%d %s", i, getBinaryOfChar(line[i]));
+// 			i++;
+// 		}
+// 		free(line);
+// 		printf("\n%s\n\n", line);
+// 	}
+// }
+
 int main() {
-	long c;
-	readLineGetLine();
-	// while (1) {
-		// c = getc(stdin);
-		// if (c == EOF) {
-			// break;
-		// }
-		// putc(c, stdout);
-	// }
-	// char str[30];
-	// scanf("%s", str);
-	// printf("%s", str);
+	size_t chars_read;
+	char *str = readLineGetLine(chars_read);
+	pointerRevision(str);
+
+	return 0;
 }
